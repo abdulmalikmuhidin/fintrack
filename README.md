@@ -34,24 +34,35 @@ fintrack/
    npm run install:all
    ```
 
-3. Set up environment variables:
+3. Set up environment variables (keep local secrets out of Git):
    ```bash
-   # Copy environment templates
+   # Copy these templates only if you do not already have local env files.
    cp apps/api/.env.example apps/api/.env
-   cp apps/web/.env.example apps/web/.env
-   
-   # Edit the .env files with your configuration
+   cp apps/web/.env.example apps/web/.env.local
    ```
 
 4. Configure your environment variables:
    
    **Backend (apps/api/.env):**
    - `PORT` - API server port (default: 3001)
-   - `MONGODB_URI` - MongoDB connection string
-   - `FRONTEND_URL` - Frontend URL for CORS (default: http://localhost:3000)
+   - `MONGODB_URI` - Required MongoDB Atlas or local MongoDB connection string
+   - `FRONTEND_URL` - Exact frontend origin allowed by CORS and auth origin checks
+   - `JWT_SECRET` - Required random secret with at least 32 characters; never commit it
+   - `JWT_EXPIRES_IN_SECONDS` - JWT and session-cookie lifetime (300–86400; default: 900)
    
-   **Frontend (apps/web/.env):**
-   - `NEXT_PUBLIC_API_URL` - Backend API URL (default: http://localhost:3001/api)
+   Generate a secret locally without adding it to source control:
+   ```bash
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+   ```
+   Put the generated value in `JWT_SECRET`. Use a separate random value for each environment.
+
+   **Frontend (apps/web/.env.local):**
+   - `NEXT_PUBLIC_API_URL` - Backend API base URL (development default: `http://localhost:3001/api`)
+
+   The API sets a short-lived `HttpOnly`, `SameSite=Lax` cookie. The web and API may use
+   different ports during development, but production deployments must use the same site
+   (for example, `app.example.com` and `api.example.com`) and HTTPS. Auth POST requests
+   require an `Origin` matching `FRONTEND_URL`.
 
 ### Development
 
@@ -138,6 +149,15 @@ cd apps/web && npm run start
   ```
   **Note:** This endpoint checks API liveness only, not database connectivity.
 
+### Authentication
+- `POST /api/auth/register` - Create an account and return its public profile
+- `POST /api/auth/login` - Verify credentials and set the HttpOnly session cookie
+- `GET /api/auth/me` - Return the authenticated user's public profile
+- `POST /api/auth/logout` - Clear the session cookie
+
+The browser sends the cookie with credentialed requests. JWTs are not exposed to frontend
+JavaScript or stored in localStorage. Passwords are hashed with bcryptjs before persistence.
+
 ## 🛠️ Technology Stack
 
 ### Frontend
@@ -158,9 +178,10 @@ cd apps/web && npm run start
 ## 📝 Development Notes
 
 - The health endpoint (`/api/health`) only checks API liveness, not database connectivity
-- CORS is configured to allow the frontend origin specified in `FRONTEND_URL`
+- CORS and auth POST origin checks use the frontend origin specified in `FRONTEND_URL`
 - Global API prefix is set to `/api`
-- Environment variables are loaded via `@nestjs/config` with validation
+- Environment variables are loaded and validated via `@nestjs/config`
+- The API requires `MONGODB_URI` and a strong `JWT_SECRET` at startup
 
 ## 🔒 Security
 

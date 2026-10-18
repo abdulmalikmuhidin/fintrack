@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -14,6 +16,20 @@ export default function Home() {
             This application is currently under active development. Core features like transaction tracking,
             account management, and dashboard analytics will be implemented in upcoming milestones.
           </p>
+        </div>
+        <div className="mb-8 flex justify-center gap-3">
+          <Link
+            href="/register"
+            className="rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white hover:bg-blue-800"
+          >
+            Create account
+          </Link>
+          <Link
+            href="/login"
+            className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 font-semibold text-gray-700 hover:bg-gray-50"
+          >
+            Log in
+          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
