@@ -7,14 +7,14 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm --workspace apps/api run start:dev\" \"npm --workspace apps/web run dev\"",
-    "dev:api": "npm --workspace apps/api run start:dev",
-    "dev:web": "npm --workspace apps/web run dev",
-    "build": "npm --workspace apps/api run build && npm --workspace apps/web run build",
-    "build:api": "npm --workspace apps/api run build",
-    "build:web": "npm --workspace apps/web run build",
-    "lint": "npm --workspace apps/api run lint && npm --workspace apps/web run lint",
-    "test": "npm --workspace apps/api run test",
+    "dev": "concurrently \"npm --prefix apps/api run start:dev\" \"npm --prefix apps/web run dev\"",
+    "dev:api": "npm --prefix apps/api run start:dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/api run build && npm --prefix apps/web run build",
+    "build:api": "npm --prefix apps/api run build",
+    "build:web": "npm --prefix apps/web run build",
+    "lint": "npm --prefix apps/api run lint && npm --prefix apps/web run lint",
+    "test": "npm --prefix apps/api run test",
     "install:all": "npm install"
   },
   "devDependencies": {
