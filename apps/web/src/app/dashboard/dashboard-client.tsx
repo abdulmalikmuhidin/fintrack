@@ -120,7 +120,8 @@ export default function DashboardClient({
   }, [endDate, router, startDate]);
 
   useEffect(() => {
-    void load();
+    const timeout = window.setTimeout(() => void load(), 150);
+    return () => window.clearTimeout(timeout);
   }, [load]);
 
   const selected = summary?.currencies.find(
@@ -236,14 +237,11 @@ export default function DashboardClient({
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
           />
         </div>
-        <button
-          type="button"
-          onClick={() => void load()}
-          disabled={loading}
-          className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-60"
-        >
-          {loading ? "Updating…" : "Apply period"}
-        </button>
+        {loading && (
+          <p className="text-sm text-slate-500" role="status">
+            Updating summary…
+          </p>
+        )}
         {summary && (
           <p className="text-sm text-slate-500" aria-live="polite">
             {summary.period.startDate} to {summary.period.endDate} (UTC)

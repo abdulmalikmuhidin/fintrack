@@ -1,4 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { DashboardService, assembleSummary } from './dashboard.service';
 
@@ -104,6 +107,27 @@ describe('DashboardService', () => {
     expect(summary.monthly).toEqual([]);
     expect(summary.expenseCategories).toEqual([]);
     expect(summary.recentTransactions).toEqual([]);
+  });
+
+  it('refuses totals that cannot be represented exactly as safe integers', () => {
+    expect(() =>
+      assembleSummary(
+        { startDate: '2026-01-01', endDate: '2026-01-31' },
+        ['USD'],
+        [
+          {
+            _id: 'USD',
+            incomeMinor: 0,
+            expenseMinor: 0,
+            balanceMinor: Number.MAX_SAFE_INTEGER + 1,
+          },
+        ],
+        [],
+        [],
+        [],
+        [],
+      ),
+    ).toThrow(InternalServerErrorException);
   });
 
   it('validates date ranges and scopes aggregation pipelines to the authenticated user', async () => {
