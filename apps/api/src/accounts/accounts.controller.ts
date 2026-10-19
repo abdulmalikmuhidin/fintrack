@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { TrustedOriginGuard } from '../auth/guards/trusted-origin.guard';
 import { PublicUser } from '../users/user.types';
 import { AccountResponse, AccountsService } from './accounts.service';
 import { CreateAccountDto, UpdateAccountDto } from './dto/account.dto';
@@ -22,6 +23,7 @@ export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Post()
+  @UseGuards(TrustedOriginGuard)
   async create(
     @CurrentUser() user: PublicUser,
     @Body() input: CreateAccountDto,
@@ -43,6 +45,7 @@ export class AccountsController {
   }
 
   @Patch(':id')
+  @UseGuards(TrustedOriginGuard)
   async update(
     @CurrentUser() user: PublicUser,
     @Param('id') accountId: string,
@@ -55,6 +58,7 @@ export class AccountsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(TrustedOriginGuard)
   async remove(
     @CurrentUser() user: PublicUser,
     @Param('id') accountId: string,

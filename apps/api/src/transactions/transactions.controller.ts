@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { TrustedOriginGuard } from '../auth/guards/trusted-origin.guard';
 import { PublicUser } from '../users/user.types';
 import {
   CreateTransactionDto,
@@ -31,6 +32,7 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
+  @UseGuards(TrustedOriginGuard)
   async create(
     @CurrentUser() user: PublicUser,
     @Body() input: CreateTransactionDto,
@@ -57,6 +59,7 @@ export class TransactionsController {
   }
 
   @Patch(':id')
+  @UseGuards(TrustedOriginGuard)
   async update(
     @CurrentUser() user: PublicUser,
     @Param('id') transactionId: string,
@@ -73,6 +76,7 @@ export class TransactionsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(TrustedOriginGuard)
   async remove(
     @CurrentUser() user: PublicUser,
     @Param('id') transactionId: string,

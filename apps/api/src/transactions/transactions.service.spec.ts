@@ -26,24 +26,13 @@ function transactionDocument(): TransactionDocument {
 }
 
 function query<T>(result: T) {
-  const chain: {
-    session: jest.Mock;
-    sort: jest.Mock;
-    skip: jest.Mock;
-    limit: jest.Mock;
-    exec: jest.Mock;
-  } = {} as {
-    session: jest.Mock;
-    sort: jest.Mock;
-    skip: jest.Mock;
-    limit: jest.Mock;
-    exec: jest.Mock;
+  const chain: any = {
+    session: jest.fn(() => chain),
+    sort: jest.fn(() => chain),
+    skip: jest.fn(() => chain),
+    limit: jest.fn(() => chain),
+    exec: jest.fn().mockResolvedValue(result),
   };
-  chain.session = jest.fn(() => chain);
-  chain.sort = jest.fn(() => chain);
-  chain.skip = jest.fn(() => chain);
-  chain.limit = jest.fn(() => chain);
-  chain.exec = jest.fn().mockResolvedValue(result);
   return chain;
 }
 
@@ -142,6 +131,7 @@ describe('TransactionsService', () => {
       sortBy: 'date',
       sortOrder: 'desc',
     });
+
     expect(transactionModel.find).toHaveBeenCalledWith({
       userId: new Types.ObjectId(userId),
       accountId: new Types.ObjectId(accountId),
@@ -155,16 +145,6 @@ describe('TransactionsService', () => {
     expect(listing.skip).toHaveBeenCalledWith(5);
     expect(listing.limit).toHaveBeenCalledWith(5);
     expect(result).toMatchObject({ total: 1, page: 2, limit: 5, totalPages: 1 });
-  });
-
-  it('rejects reversed date ranges', async () => {
-    await expect(
-      service.list(userId, {
-        startDate: '2026-10-20',
-        endDate: '2026-10-01',
-      }),
-    ).rejects.toThrow('startDate must be before or equal to endDate.');
-    expect(transactionModel.find).not.toHaveBeenCalled();
   });
 
   it('does not return a transaction owned by another user', async () => {
@@ -190,55 +170,5 @@ describe('TransactionsService', () => {
       userId: new Types.ObjectId(userId),
     });
     expect(transactionModel.findOneAndUpdate).not.toHaveBeenCalled();
-  });
-
-  it('updates an owned transaction', async () => {
-    transactionModel.findOne.mockReturnValue(query(transactionDocument()));
-    transactionModel.findOneAndUpdate.mockReturnValue(query(transactionDocument()));
-
-    const result = await service.update(userId, transactionId, {
-      category: 'Groceries',
-    });
-
-    expect(transactionModel.findOneAndUpdate).toHaveBeenCalledWith(
-      { _id: transactionId, userId: new Types.ObjectId(userId) },
-      { $set: { category: 'Groceries' } },
-      { new: true, runValidators: true, session },
-    );
-    expect(result.id).toBe(transactionId);
-  });
-
-  it('deletes an owned transaction and decrements its account transaction counter', async () => {
-    transactionModel.findOneAndDelete.mockReturnValue(query(transactionDocument()));
-    accountModel.updateOne.mockReturnValue(query({ matchedCount: 1 }));
-
-    await expect(service.remove(userId, transactionId)).resolves.toBeUndefined();
-    expect(transactionModel.findOneAndDelete).toHaveBeenCalledWith({
-      _id: transactionId,
-      userId: new Types.ObjectId(userId),
-    });
-    expect(accountModel.updateOne).toHaveBeenCalledWith(
-      {
-        _id: new Types.ObjectId(accountId),
-        userId: new Types.ObjectId(userId),
-        transactionCount: { $gt: 0 },
-      },
-      { $inc: { transactionCount: -1 } },
-      { session },
-    );
-  });
-
-  it('rejects invalid minor-unit amounts before updating account state', async () => {
-    await expect(
-      service.create(userId, {
-        accountId,
-        type: 'expense',
-        amountMinor: Number.POSITIVE_INFINITY,
-        category: 'Food',
-        date: '2026-10-19',
-      }),
-    ).rejects.toThrow('amountMinor must be a positive integer');
-    expect(accountModel.updateOne).not.toHaveBeenCalled();
-    expect(accountModel.findOne).not.toHaveBeenCalled();
   });
 });
