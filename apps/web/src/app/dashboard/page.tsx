@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { ApiError, getCurrentUserForServer } from '../../lib/api';
-import LogoutButton from './logout-button';
+import FinanceNav from '../finance-nav';
 
 export default async function DashboardPage() {
   const token = cookies().get('fintrack_session')?.value;
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
             Signed in as <span className="font-medium text-gray-900">{user.name || user.email}</span>
           </p>
         </div>
-        <LogoutButton />
+        <FinanceNav />
       </header>
 
       <section className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-8">

@@ -5,6 +5,67 @@ export interface PublicUser {
   createdAt: string;
 }
 
+export type AccountType = 'checking' | 'savings' | 'cash' | 'other';
+export type TransactionType = 'income' | 'expense';
+export type TransactionSortField = 'date' | 'createdAt' | 'amountMinor';
+
+export interface Account {
+  id: string;
+  name: string;
+  type: AccountType;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AccountInput {
+  name: string;
+  type: AccountType;
+  currency: string;
+}
+
+export interface Transaction {
+  id: string;
+  accountId: string;
+  type: TransactionType;
+  amountMinor: number;
+  currency: string;
+  category: string;
+  description: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TransactionInput {
+  accountId: string;
+  type: TransactionType;
+  amountMinor: number;
+  category: string;
+  description?: string;
+  date: string;
+}
+
+export interface TransactionFilters {
+  page?: number;
+  limit?: number;
+  type?: TransactionType;
+  accountId?: string;
+  category?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: TransactionSortField;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface TransactionPage {
+  items: Transaction[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 interface UserResponse {
   user: PublicUser;
 }
@@ -90,6 +151,9 @@ function getErrorMessage(status: number, payload: unknown): string {
     return 'This request could not be verified. Refresh the page and try again.';
   }
 
+  if (status === 404) {
+    return 'The requested item could not be found.';
+  }
   if (status === 400 || status === 409) {
     const message = getPayloadMessage(payload);
     if (message) {
@@ -136,6 +200,73 @@ export const authApi = {
 
   logout(): Promise<void> {
     return request<void>('/auth/logout', { method: 'POST' });
+  },
+};
+
+export const accountsApi = {
+  async list(): Promise<Account[]> {
+    const response = await request<{ items: Account[] }>('/accounts');
+    return response.items;
+  },
+
+  async create(input: AccountInput): Promise<Account> {
+    const response = await request<{ account: Account }>('/accounts', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    return response.account;
+  },
+
+  async update(id: string, input: Partial<AccountInput>): Promise<Account> {
+    const response = await request<{ account: Account }>(
+      `/accounts/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify(input) },
+    );
+    return response.account;
+  },
+
+  remove(id: string): Promise<void> {
+    return request<void>(`/accounts/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+export const transactionsApi = {
+  async list(filters: TransactionFilters = {}): Promise<TransactionPage> {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== '') {
+        params.set(key, String(value));
+      }
+    }
+    const query = params.size ? `?${params.toString()}` : '';
+    return request<TransactionPage>(`/transactions${query}`);
+  },
+
+  async create(input: TransactionInput): Promise<Transaction> {
+    const response = await request<{ transaction: Transaction }>('/transactions', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    return response.transaction;
+  },
+
+  async update(
+    id: string,
+    input: Partial<TransactionInput>,
+  ): Promise<Transaction> {
+    const response = await request<{ transaction: Transaction }>(
+      `/transactions/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify(input) },
+    );
+    return response.transaction;
+  },
+
+  remove(id: string): Promise<void> {
+    return request<void>(`/transactions/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
   },
 };
 

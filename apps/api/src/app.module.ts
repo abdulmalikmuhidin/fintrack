@@ -5,8 +5,10 @@ import { resolve } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { AccountsModule } from './accounts/accounts.module';
 import { validateEnvironment } from './config/env.validation';
 import { HealthModule } from './health/health.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { HealthModule } from './health/health.module';
       inject: [ConfigService],
     }),
     AuthModule,
+    AccountsModule,
+    TransactionsModule,
     HealthModule,
   ],
   controllers: [AppController],

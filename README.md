@@ -158,6 +158,58 @@ cd apps/web && npm run start
 The browser sends the cookie with credentialed requests. JWTs are not exposed to frontend
 JavaScript or stored in localStorage. Passwords are hashed with bcryptjs before persistence.
 
+### Accounts and transactions
+
+All finance endpoints require the authenticated `fintrack_session` cookie. Account and
+transaction ownership always comes from the verified JWT user; clients cannot set `userId`.
+
+- `POST /api/accounts` — create an account (`name`, `type`, `currency`)
+- `GET /api/accounts` — list the signed-in user's accounts
+- `GET /api/accounts/:id` — retrieve an owned account
+- `PATCH /api/accounts/:id` — update an owned account's name, type, or currency
+- `DELETE /api/accounts/:id` — delete an owned account only when it has no transactions
+- `POST /api/transactions` — create an income or expense
+- `GET /api/transactions` — list the signed-in user's transactions with filtering and pagination
+- `GET /api/transactions/:id` — retrieve an owned transaction
+- `PATCH /api/transactions/:id` — update an owned transaction
+- `DELETE /api/transactions/:id` — delete an owned transaction
+
+Supported account types are `checking`, `savings`, `cash`, and `other`. Currency uses an
+uppercase three-letter ISO 4217 code. Transaction types are `income` and `expense`.
+
+Money is stored and returned as a positive integer `amountMinor`, never as a floating-point
+amount. The account's ISO currency determines its minor-unit precision (for example, USD 1234
+means $12.34; JPY 1234 means ¥1,234). The API accepts between 1 and 100,000,000,000 minor units.
+Transactions store the currency used when created; changing an account's currency or
+reassigning a transaction does not reinterpret historical amounts. The UI uses the stored
+transaction currency when editing and displaying an existing transaction.
+
+Example transaction request:
+
+```json
+{
+  "accountId": "65aa00000000000000000001",
+  "type": "expense",
+  "amountMinor": 1299,
+  "category": "Food",
+  "description": "Lunch",
+  "date": "2026-10-19"
+}
+```
+
+Transaction responses include `id`, `accountId`, `type`, `amountMinor`, `currency`,
+`category`, `description`, `date`, `createdAt`, and `updatedAt`. List responses include
+`items`, `total`, `page`, `limit`, and `totalPages`. `GET /api/transactions` supports
+`page`, `limit` (maximum 100), `type`, `accountId`, `category`, `startDate`, `endDate`,
+`sortBy` (`date`, `createdAt`, or `amountMinor`), and `sortOrder` (`asc` or `desc`).
+Date-only range endpoints include the full UTC day. Results default to newest transaction
+date first.
+
+Account deletion returns `409 Conflict` when transactions remain. Transaction creation,
+reassignment, deletion, and account deletion use MongoDB transactions and an account-side
+transaction counter so concurrent operations cannot leave dangling account references.
+This requires a MongoDB deployment with transaction support (MongoDB Atlas provides it).
+
 ## 🛠️ Technology Stack
 
 ### Frontend
