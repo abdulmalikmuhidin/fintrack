@@ -310,7 +310,7 @@ export default function TransactionsClient() {
           <input id="transaction-description" maxLength={500} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" />
         </div>
         <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-3">
-          <button type="submit" disabled={saving || !accounts.length} className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-60">{saving ? 'Saving…' : editingId ? 'Save changes' : 'Add transaction'}</button>
+          <button type="submit" disabled={saving || !accounts.length} className="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">{saving ? 'Saving…' : editingId ? 'Save changes' : 'Add transaction'}</button>
           {editingId && <button type="button" disabled={saving} onClick={() => { setEditingId(null); setForm(newForm(accounts[0]?.id || '')); setCurrencyOverride(null); }} className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700">Cancel</button>}
         </div>
       </form>
@@ -380,7 +380,7 @@ export default function TransactionsClient() {
                     <td className="px-4 py-3 text-gray-700">{accounts.find((account) => account.id === transaction.accountId)?.name ?? 'Account'}</td>
                     <td className="px-4 py-3 capitalize text-gray-700">{transaction.type}</td>
                     <td className={`whitespace-nowrap px-4 py-3 text-right font-medium ${transaction.type === 'income' ? 'text-green-700' : 'text-gray-900'}`}>{formatMinorUnits(transaction.amountMinor, transaction.currency)}</td>
-                    <td className="whitespace-nowrap px-4 py-3"><button className="mr-3 font-medium text-blue-700 hover:underline" onClick={() => edit(transaction)}>Edit</button><button className="font-medium text-red-700 hover:underline" onClick={() => void remove(transaction)}>Delete</button></td>
+                    <td className="whitespace-nowrap px-4 py-3"><button className="mr-3 font-medium text-emerald-800 hover:underline" onClick={() => edit(transaction)}>Edit</button><button className="font-medium text-red-700 hover:underline" onClick={() => void remove(transaction)}>Delete</button></td>
                   </tr>
                 ))}
               </tbody>

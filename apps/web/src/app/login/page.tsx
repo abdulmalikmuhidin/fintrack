@@ -39,8 +39,8 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <section className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-        <Link href="/" className="text-sm font-semibold text-blue-700 hover:text-blue-800">
-          FinTrack
+        <Link href="/" className="text-sm font-bold text-slate-950 hover:text-emerald-800">
+          Fin<span className="text-emerald-700">Track</span>
         </Link>
         <h1 className="mt-5 text-3xl font-bold tracking-tight text-gray-900">
           Welcome back
@@ -61,7 +61,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
           </div>
           <div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-gray-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
           </div>
 
@@ -90,7 +90,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-blue-700 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? 'Logging in…' : 'Log in'}
           </button>
@@ -98,7 +98,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600">
           New to FinTrack?{' '}
-          <Link href="/register" className="font-semibold text-blue-700 hover:underline">
+          <Link href="/register" className="font-semibold text-emerald-800 hover:underline">
             Create an account
           </Link>
         </p>

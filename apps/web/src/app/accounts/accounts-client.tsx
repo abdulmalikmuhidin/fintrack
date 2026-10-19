@@ -146,7 +146,7 @@ export default function AccountsClient() {
                   </p>
                 </div>
                 <div className="flex gap-3">
-                  <button className="text-sm font-medium text-blue-700 hover:underline" onClick={() => edit(account)}>Edit</button>
+                  <button className="text-sm font-medium text-emerald-800 hover:underline" onClick={() => edit(account)}>Edit</button>
                   <button className="text-sm font-medium text-red-700 hover:underline" onClick={() => void remove(account)}>Delete</button>
                 </div>
               </li>
@@ -176,7 +176,7 @@ export default function AccountsClient() {
           <input id="account-currency" required minLength={3} maxLength={3} value={form.currency} onChange={(event) => setForm({ ...form, currency: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 uppercase text-gray-900" />
         </div>
         <div className="flex gap-3">
-          <button type="submit" disabled={saving} className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-60">
+          <button type="submit" disabled={saving} className="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
             {saving ? 'Saving…' : editingId ? 'Save changes' : 'Add account'}
           </button>
           {editingId && <button type="button" disabled={saving} onClick={() => { setEditingId(null); setForm(emptyForm); }} className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700">Cancel</button>}

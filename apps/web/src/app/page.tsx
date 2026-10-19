@@ -8,19 +8,18 @@ export default function Home() {
           FinTrack
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          Your personal finance tracker - track expenses, manage budgets, and achieve your financial goals.
+          A clear, private place to organize accounts and track income and expenses.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">🚧 Under Development</h2>
-          <p className="text-blue-700">
-            This application is currently under active development. Core features like transaction tracking,
-            account management, and dashboard analytics will be implemented in upcoming milestones.
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-8">
+          <h2 className="text-lg font-semibold text-emerald-900 mb-2">Your finances, organized</h2>
+          <p className="text-emerald-900">
+            Create accounts, record transactions, and review your financial activity with currency-aware summaries.
           </p>
         </div>
         <div className="mb-8 flex justify-center gap-3">
           <Link
             href="/register"
-            className="rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white hover:bg-blue-800"
+            className="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white hover:bg-emerald-800"
           >
             Create account
           </Link>
@@ -41,8 +40,8 @@ export default function Home() {
             <p className="text-gray-600">Track income and expenses with categories and tags</p>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">🎯 Budgets</h3>
-            <p className="text-gray-600">Set budgets and get alerts when you exceed limits</p>
+            <h3 className="font-semibold text-gray-900 mb-2">📈 Dashboard</h3>
+            <p className="text-gray-600">Review recorded income, expenses, and category breakdowns</p>
           </div>
         </div>
         <footer className="mt-12 text-sm text-gray-500">

@@ -39,3 +39,4 @@ export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 TransactionSchema.index({ userId: 1, date: -1, _id: -1 });
 TransactionSchema.index({ userId: 1, accountId: 1, date: -1, _id: -1 });
 TransactionSchema.index({ userId: 1, category: 1, date: -1 });
+TransactionSchema.index({ userId: 1, type: 1, date: -1, category: 1 });

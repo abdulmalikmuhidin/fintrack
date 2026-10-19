@@ -9,6 +9,7 @@ import { AccountsModule } from './accounts/accounts.module';
 import { validateEnvironment } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     AuthModule,
     AccountsModule,
     TransactionsModule,
+    DashboardModule,
     HealthModule,
   ],
   controllers: [AppController],

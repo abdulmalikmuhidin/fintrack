@@ -1,17 +1,16 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ApiError, getCurrentUserForServer } from './api';
+import { ApiError, getCurrentUserForServer, PublicUser } from './api';
 
-export async function verifyPageSession(): Promise<boolean> {
+export async function verifyPageSession(): Promise<PublicUser | null> {
   const token = cookies().get('fintrack_session')?.value;
   if (!token) redirect('/login');
   try {
-    await getCurrentUserForServer(token);
-    return true;
+    return await getCurrentUserForServer(token);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       redirect('/login');
     }
-    return false;
+    return null;
   }
 }

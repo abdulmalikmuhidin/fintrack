@@ -173,6 +173,7 @@ transaction ownership always comes from the verified JWT user; clients cannot se
 - `GET /api/transactions/:id` — retrieve an owned transaction
 - `PATCH /api/transactions/:id` — update an owned transaction
 - `DELETE /api/transactions/:id` — delete an owned transaction
+- `GET /api/dashboard/summary` — get an authenticated, currency-separated financial summary
 
 Supported account types are `checking`, `savings`, `cash`, and `other`. Currency uses an
 uppercase three-letter ISO 4217 code. Transaction types are `income` and `expense`.
@@ -210,6 +211,58 @@ reassignment, deletion, and account deletion use MongoDB transactions and an acc
 transaction counter so concurrent operations cannot leave dangling account references.
 This requires a MongoDB deployment with transaction support (MongoDB Atlas provides it).
 
+### Dashboard summary
+
+`GET /api/dashboard/summary?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` requires the
+authenticated session cookie. Both dates are inclusive UTC calendar dates; if omitted,
+the endpoint uses the current UTC calendar month. Invalid dates and reversed ranges are
+rejected.
+
+The response includes:
+
+```json
+{
+  "period": { "startDate": "2026-10-01", "endDate": "2026-10-31" },
+  "currencies": [
+    {
+      "currency": "USD",
+      "balanceMinor": 12500,
+      "incomeMinor": 8000,
+      "expenseMinor": 2500,
+      "netCashFlowMinor": 5500
+    }
+  ],
+  "monthly": [
+    {
+      "month": "2026-10",
+      "currency": "USD",
+      "incomeMinor": 8000,
+      "expenseMinor": 2500
+    }
+  ],
+  "expenseCategories": [
+    { "category": "Food", "currency": "USD", "amountMinor": 2500 }
+  ],
+  "recentTransactions": []
+}
+```
+
+All summary values use integer minor units, matching transaction storage, and are returned
+separately for each ISO 4217 currency; currencies are never added together. `incomeMinor`,
+`expenseMinor`, and `netCashFlowMinor` cover only the requested reporting period.
+`balanceMinor` is the all-time net of recorded income and expenses. It is a tracked balance,
+not a bank balance: opening balances and transfers are not modeled. Monthly chart data and
+expense category totals cover only the selected period; recent transactions are the latest
+eight owned records, irrespective of the selected period. Category totals include only
+expense transactions. The dashboard uses a default current-UTC-month view and supports
+last month, last three months, current year, and custom date ranges.
+
+All aggregation pipelines are scoped to the verified user ID. Recent transaction account
+names are joined only to accounts with the same owner. The transaction indexes support
+user/date reports, date/type/category expense reports, and the existing account/category
+listing patterns. The API rejects aggregation totals that exceed JavaScript's safe integer
+range rather than returning an imprecise financial value.
+
 ## 🛠️ Technology Stack
 
 ### Frontend
@@ -217,6 +270,7 @@ This requires a MongoDB deployment with transaction support (MongoDB Atlas provi
 - TypeScript
 - Tailwind CSS
 - React 18
+- Recharts for responsive dashboard charts
 
 ### Backend
 - NestJS 10

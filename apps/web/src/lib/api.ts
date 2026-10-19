@@ -66,6 +66,41 @@ export interface TransactionPage {
   totalPages: number;
 }
 
+export interface DashboardCurrencySummary {
+  currency: string;
+  balanceMinor: number;
+  incomeMinor: number;
+  expenseMinor: number;
+  netCashFlowMinor: number;
+}
+
+export interface DashboardSummary {
+  period: { startDate: string; endDate: string };
+  currencies: DashboardCurrencySummary[];
+  monthly: Array<{
+    month: string;
+    currency: string;
+    incomeMinor: number;
+    expenseMinor: number;
+  }>;
+  expenseCategories: Array<{
+    category: string;
+    currency: string;
+    amountMinor: number;
+  }>;
+  recentTransactions: Array<{
+    id: string;
+    accountId: string;
+    accountName: string;
+    type: TransactionType;
+    amountMinor: number;
+    currency: string;
+    category: string;
+    description: string;
+    date: string;
+  }>;
+}
+
 interface UserResponse {
   user: PublicUser;
 }
@@ -267,6 +302,15 @@ export const transactionsApi = {
     return request<void>(`/transactions/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
+  },
+};
+
+export const dashboardApi = {
+  getSummary(filters: Pick<TransactionFilters, 'startDate' | 'endDate'>): Promise<DashboardSummary> {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.set('startDate', filters.startDate);
+    if (filters.endDate) params.set('endDate', filters.endDate);
+    return request<DashboardSummary>(`/dashboard/summary?${params.toString()}`);
   },
 };
 
