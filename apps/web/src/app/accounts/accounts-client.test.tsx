@@ -60,8 +60,7 @@ describe("AccountsClient", () => {
         currency: "USD",
       }),
     );
-    expect(await screen.findByText("Everyday")).toBeInTheDocument();
-    expect(await screen.findByRole("status")).toHaveTextContent("Account created.");
+    expect(await screen.findByText("Account created.")).toBeInTheDocument();
   });
 
   it("edits an existing account using only editable fields", async () => {

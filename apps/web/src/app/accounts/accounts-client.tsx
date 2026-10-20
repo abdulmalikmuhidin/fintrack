@@ -85,7 +85,7 @@ export default function AccountsClient() {
         setNotice('Account updated.');
       } else {
         const created = await accountsApi.create(cleaned);
-        setAccounts((previous) => [created, ...previous]);
+        setAccounts([created]);
         setNotice('Account created.');
       }
       setLoading(false);
