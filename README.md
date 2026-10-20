@@ -64,7 +64,7 @@ fintrack/
    Put the generated value in `JWT_SECRET`. Use a separate random value for each environment.
 
    **Frontend (apps/web/.env.local):**
-   - `NEXT_PUBLIC_API_URL` - Backend API base URL (development default: `http://localhost:3001/api`)
+   - `NEXT_PUBLIC_API_URL` - Backend API base URL (the example file uses `http://localhost:3001/api`)
 
    The API sets a short-lived `HttpOnly`, `SameSite=Lax` cookie. The web and API may use
    different ports during development, but production deployments must use the same site
@@ -129,14 +129,11 @@ With the API running, Swagger UI is available at `http://localhost:3001/docs`; i
 OpenAPI operations are generated from the actual NestJS controllers and DTOs. Protected
 operations use the `fintrack_session` cookie.
 
-### Deployment preparation
+### Deployment
 
-- Configure real `MONGODB_URI`, `JWT_SECRET`, and `FRONTEND_URL` values in the deployment
-  environment. Never put secrets in source control or `NEXT_PUBLIC_*`.
-- Use HTTPS and a same-site frontend/API host arrangement for the cookie session.
-- Allow the API's outbound network in MongoDB Atlas and use a least-privilege database user.
-- Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` before
-  releasing. This repository has no deployment workflow.
+See [docs/deployment.md](docs/deployment.md) for the exact Render and Vercel project
+settings, production environment variables, Atlas network guidance, and post-deployment
+smoke tests. No live deployment URLs are listed because a deployment has not been verified.
 
 ### Production
 
@@ -180,10 +177,11 @@ cd apps/web && npm run start
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API base URL | http://localhost:3001/api |
+| `NEXT_PUBLIC_API_URL` | Backend API base URL; set before building | None; local example: http://localhost:3001/api |
 
 The API also validates `JWT_SECRET` and `JWT_EXPIRES_IN_SECONDS` at startup. The example
 files use placeholders only; generate independent strong secrets for each environment.
+`SWAGGER_ENABLED` defaults to enabled outside production and disabled in production.
 
 ## 📡 API Endpoints
 

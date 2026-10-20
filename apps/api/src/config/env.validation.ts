@@ -45,6 +45,22 @@ export function validateEnvironment(
   } catch {
     throw new Error('FRONTEND_URL must be a valid web origin.');
   }
+  if (environment.NODE_ENV === 'production' && !frontendOrigin.startsWith('https://')) {
+    throw new Error('FRONTEND_URL must use HTTPS in production.');
+  }
+
+  const swaggerSetting = environment.SWAGGER_ENABLED;
+  if (
+    swaggerSetting !== undefined &&
+    swaggerSetting !== 'true' &&
+    swaggerSetting !== 'false'
+  ) {
+    throw new Error('SWAGGER_ENABLED must be either true or false.');
+  }
+  const swaggerEnabled =
+    swaggerSetting === undefined
+      ? environment.NODE_ENV !== 'production'
+      : swaggerSetting === 'true';
 
   return {
     ...environment,
@@ -53,6 +69,7 @@ export function validateEnvironment(
     JWT_EXPIRES_IN_SECONDS: expirationSeconds,
     PORT: port,
     FRONTEND_URL: frontendOrigin,
+    SWAGGER_ENABLED: swaggerEnabled,
   };
 }
 

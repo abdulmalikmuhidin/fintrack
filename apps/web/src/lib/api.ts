@@ -126,9 +126,40 @@ export class ApiError extends Error {
   }
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ??
-  'http://localhost:3001/api';
+function getApiUrl(): string {
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!configuredUrl) {
+    throw new Error('NEXT_PUBLIC_API_URL must be set before building the frontend.');
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(configuredUrl);
+    } catch {
+      throw new Error('NEXT_PUBLIC_API_URL must be a valid HTTPS API URL.');
+    }
+
+    const apiPath = parsedUrl.pathname.replace(/\/+$/, '');
+    if (
+      parsedUrl.protocol !== 'https:' ||
+      apiPath !== '/api' ||
+      parsedUrl.username ||
+      parsedUrl.password ||
+      parsedUrl.search ||
+      parsedUrl.hash ||
+      ['localhost', '127.0.0.1', '[::1]'].includes(parsedUrl.hostname)
+    ) {
+      throw new Error(
+        'NEXT_PUBLIC_API_URL must be an HTTPS production URL ending in /api.',
+      );
+    }
+  }
+
+  return configuredUrl.replace(/\/+$/, '');
+}
+
+const API_URL = getApiUrl();
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);

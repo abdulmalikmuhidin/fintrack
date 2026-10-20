@@ -38,11 +38,13 @@ async function bootstrap() {
       name: 'fintrack_session',
     })
     .build();
-  const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
-  SwaggerModule.setup('docs', app, openApiDocument);
+  if (configService.getOrThrow<boolean>('SWAGGER_ENABLED')) {
+    const openApiDocument = SwaggerModule.createDocument(app, openApiConfig);
+    SwaggerModule.setup('docs', app, openApiDocument);
+  }
 
   const port = configService.getOrThrow<number>('PORT');
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`FinTrack API listening on port ${port}`);
 }
 
