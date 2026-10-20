@@ -23,7 +23,7 @@ fintrack/
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js >= 18.18.0
 - npm >= 9.0.0
 - MongoDB Atlas account (or local MongoDB instance)
 - A MongoDB deployment with replica-set/transaction support for finance writes

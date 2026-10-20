@@ -7,9 +7,10 @@ import {
   transactionsApi,
 } from "../../lib/api";
 
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }),
-}));
+jest.mock("next/navigation", () => {
+  const router = { replace: jest.fn(), refresh: jest.fn() };
+  return { useRouter: () => router };
+});
 
 jest.mock("../../lib/api", () => ({
   ApiError: class ApiError extends Error {

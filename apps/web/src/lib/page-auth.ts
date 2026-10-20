@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import { ApiError, getCurrentUserForServer, PublicUser } from './api';
 
 export async function verifyPageSession(): Promise<PublicUser | null> {
-  const token = cookies().get('fintrack_session')?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('fintrack_session')?.value;
   if (!token) redirect('/login');
   try {
     return await getCurrentUserForServer(token);
