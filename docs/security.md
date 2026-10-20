@@ -36,6 +36,16 @@ that the application is secure or a substitute for a deployment-specific review.
 - Dependency audit results are advisory and can include transitive findings. Review
   `npm audit` output and apply compatible updates before deployment.
 
+## Production release review
+
+On October 20, 2026, `npm audit --omit=dev` reported zero critical, five high, eight
+moderate, and one low production dependency advisories after updating the frontend to
+Next.js `15.5.28`. The remaining high findings involve NestJS platform dependencies,
+`multer`, `js-yaml`, `lodash`, and `postcss`; npm's suggested fixes require major framework
+upgrades. This repository preparation does not include those migrations. Treat the
+remaining high findings as a release blocker until they are fixed or an informed risk
+acceptance is documented. Re-run the audit immediately before launch.
+
 ## Operational guidance
 
 Use a least-privilege MongoDB user, restrict Atlas network access, use unique high-entropy
