@@ -64,11 +64,28 @@ export class TransactionsController {
 
   @Get()
   @ApiOperation({ summary: 'List owned transactions with filters and pagination' })
-  @ApiQuery({ name: 'page', required: false, type: Number, minimum: 1, maximum: 100_000, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, type: Number, minimum: 1, maximum: 100, example: 10 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number from 1 to 100000.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Page size from 1 to 100.',
+  })
   @ApiQuery({ name: 'type', required: false, enum: ['income', 'expense'] })
   @ApiQuery({ name: 'accountId', required: false, type: String })
-  @ApiQuery({ name: 'category', required: false, type: String, maxLength: 60 })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    type: String,
+    description: 'Exact category filter, up to 60 characters.',
+  })
   @ApiQuery({ name: 'startDate', required: false, type: String, example: '2026-10-01' })
   @ApiQuery({ name: 'endDate', required: false, type: String, example: '2026-10-31' })
   @ApiQuery({ name: 'sortBy', required: false, enum: ['date', 'createdAt', 'amountMinor'] })

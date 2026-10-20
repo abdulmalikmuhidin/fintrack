@@ -7,6 +7,9 @@ import { normalizeEmail, UsersService } from './users.service';
 jest.mock('bcryptjs', () => ({
   hash: jest.fn(),
 }));
+const bcryptMock = jest.requireMock('bcryptjs') as {
+  hash: jest.Mock;
+};
 
 describe('UsersService', () => {
   it('normalizes email consistently', () => {
@@ -40,7 +43,7 @@ describe('UsersService', () => {
     };
     const create = jest.fn().mockResolvedValue(user);
     const service = new UsersService({ create } as unknown as Model<User>);
-    jest.mocked(bcrypt.hash).mockResolvedValue('stored-hash');
+    bcryptMock.hash.mockResolvedValue('stored-hash');
 
     const result = await service.createUser({
       name: ' Example User ',
@@ -48,7 +51,7 @@ describe('UsersService', () => {
       password: 'A-Strong-Password123!',
     });
 
-    expect(bcrypt.hash).toHaveBeenCalledWith('A-Strong-Password123!', 12);
+    expect(bcryptMock.hash).toHaveBeenCalledWith('A-Strong-Password123!', 12);
     expect(create).toHaveBeenCalledWith({
       name: 'Example User',
       email: 'user@example.com',

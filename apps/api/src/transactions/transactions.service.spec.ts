@@ -26,13 +26,24 @@ function transactionDocument(): TransactionDocument {
 }
 
 function query<T>(result: T) {
-  const chain: any = {
-    session: jest.fn(() => chain),
-    sort: jest.fn(() => chain),
-    skip: jest.fn(() => chain),
-    limit: jest.fn(() => chain),
-    exec: jest.fn().mockResolvedValue(result),
+  const chain: {
+    session: jest.Mock;
+    sort: jest.Mock;
+    skip: jest.Mock;
+    limit: jest.Mock;
+    exec: jest.Mock;
+  } = {} as {
+    session: jest.Mock;
+    sort: jest.Mock;
+    skip: jest.Mock;
+    limit: jest.Mock;
+    exec: jest.Mock;
   };
+  chain.session = jest.fn(() => chain);
+  chain.sort = jest.fn(() => chain);
+  chain.skip = jest.fn(() => chain);
+  chain.limit = jest.fn(() => chain);
+  chain.exec = jest.fn().mockResolvedValue(result);
   return chain;
 }
 

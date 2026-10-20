@@ -19,7 +19,8 @@ describe('AuthController', () => {
       AuthController.prototype.me,
     );
     expect(guards).toHaveLength(1);
-    expect(guards[0].name).toContain('AuthGuard');
+    expect(guards[0].prototype).toHaveProperty('canActivate');
+    expect(guards[0].prototype).toHaveProperty('handleRequest');
   });
 
   it('requires a trusted origin on registration and logout mutations', () => {
