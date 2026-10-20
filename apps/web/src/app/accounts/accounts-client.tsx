@@ -50,9 +50,7 @@ export default function AccountsClient() {
       }
       setError(caught instanceof ApiError ? caught.message : 'Unable to load accounts.');
     } finally {
-      if (requestId === loadVersion.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, [router]);
 
@@ -62,6 +60,7 @@ export default function AccountsClient() {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    loadVersion.current += 1;
     setError('');
     setNotice('');
     const cleaned = {
@@ -113,6 +112,7 @@ export default function AccountsClient() {
     if (!window.confirm(`Delete "${account.name}"? Accounts with transactions cannot be deleted.`)) {
       return;
     }
+    loadVersion.current += 1;
     setError('');
     setNotice('');
     try {
