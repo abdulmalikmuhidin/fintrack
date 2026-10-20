@@ -9,8 +9,8 @@ import {
   ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiTags,
+  ApiQuery,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
@@ -25,7 +25,8 @@ export class DashboardController {
   @ApiOperation({
     summary: 'Get currency-separated balance and reporting-period summary',
   })
-  @ApiQuery({ type: DashboardSummaryQueryDto })
+  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2026-10-01' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2026-10-31' })
   @ApiOkResponse({
     description:
       'All money values are integer minor units. Totals are kept separate per currency.',

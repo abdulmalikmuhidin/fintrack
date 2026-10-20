@@ -24,6 +24,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -61,6 +62,7 @@ export class AccountsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one owned account' })
+  @ApiParam({ name: 'id', description: 'Account ObjectId.' })
   @ApiOkResponse({ description: 'Owned account.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
   @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
@@ -74,6 +76,7 @@ export class AccountsController {
   @Patch(':id')
   @UseGuards(TrustedOriginGuard)
   @ApiOperation({ summary: 'Update an owned account' })
+  @ApiParam({ name: 'id', description: 'Account ObjectId.' })
   @ApiOkResponse({ description: 'Updated account.' })
   @ApiBadRequestResponse({ description: 'Input validation failed.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
@@ -93,6 +96,7 @@ export class AccountsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(TrustedOriginGuard)
   @ApiOperation({ summary: 'Delete an owned account with no transactions' })
+  @ApiParam({ name: 'id', description: 'Account ObjectId.' })
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
   @ApiConflictResponse({ description: 'Account has transactions and cannot be deleted.' })

@@ -24,6 +24,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -63,7 +64,15 @@ export class TransactionsController {
 
   @Get()
   @ApiOperation({ summary: 'List owned transactions with filters and pagination' })
-  @ApiQuery({ type: TransactionQueryDto })
+  @ApiQuery({ name: 'page', required: false, type: Number, minimum: 1, maximum: 100_000, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, minimum: 1, maximum: 100, example: 10 })
+  @ApiQuery({ name: 'type', required: false, enum: ['income', 'expense'] })
+  @ApiQuery({ name: 'accountId', required: false, type: String })
+  @ApiQuery({ name: 'category', required: false, type: String, maxLength: 60 })
+  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2026-10-01' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2026-10-31' })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['date', 'createdAt', 'amountMinor'] })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   @ApiOkResponse({
     description: 'Paginated transactions. Amounts are integer minor units and include currency.',
     schema: {
@@ -88,6 +97,7 @@ export class TransactionsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get one owned transaction' })
+  @ApiParam({ name: 'id', description: 'Transaction ObjectId.' })
   @ApiOkResponse({ description: 'Owned transaction.' })
   @ApiNotFoundResponse({ description: 'Transaction is missing or not owned by the user.' })
   @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
