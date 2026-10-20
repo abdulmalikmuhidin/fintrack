@@ -88,6 +88,7 @@ export default function AccountsClient() {
         setAccounts((previous) => [created, ...previous]);
         setNotice('Account created.');
       }
+      setLoading(false);
       setForm(emptyForm);
       setEditingId(null);
     } catch (caught) {
@@ -119,6 +120,7 @@ export default function AccountsClient() {
       await accountsApi.remove(account.id);
       setAccounts((previous) => previous.filter((item) => item.id !== account.id));
       setNotice('Account deleted.');
+      setLoading(false);
       if (editingId === account.id) {
         setEditingId(null);
         setForm(emptyForm);
