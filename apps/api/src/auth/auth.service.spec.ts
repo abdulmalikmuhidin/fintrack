@@ -7,6 +7,11 @@ import { LoginDto } from './dto/login.dto';
 import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/users.service';
 
+jest.mock('bcryptjs', () => ({
+  compare: jest.fn(),
+  hashSync: jest.fn(() => 'dummy-hash'),
+}));
+
 describe('AuthService', () => {
   let authService: AuthService;
   let usersService: jest.Mocked<
@@ -38,12 +43,12 @@ describe('AuthService', () => {
 
   it('returns the same unauthorized response for an unknown email', async () => {
     usersService.findByEmailForAuthentication.mockResolvedValue(null);
-    const compareSpy = jest.spyOn(bcrypt, 'compare');
+    jest.mocked(bcrypt.compare).mockResolvedValue(false);
 
     await expect(
       authService.login({ email: 'missing@example.com', password: 'password' }),
     ).rejects.toThrow(new UnauthorizedException('Invalid email or password.'));
-    expect(compareSpy).toHaveBeenCalledWith(
+    expect(bcrypt.compare).toHaveBeenCalledWith(
       'password',
       expect.any(String),
     );
@@ -59,7 +64,7 @@ describe('AuthService', () => {
       createdAt: new Date('2025-01-01T00:00:00.000Z'),
     } as unknown as UserDocument;
     usersService.findByEmailForAuthentication.mockResolvedValue(user);
-    jest.spyOn(bcrypt, 'compare').mockImplementation(async () => false);
+    jest.mocked(bcrypt.compare).mockResolvedValue(false);
 
     await expect(
       authService.login({ email: 'user@example.com', password: 'incorrect' }),
@@ -76,7 +81,7 @@ describe('AuthService', () => {
       createdAt: new Date('2025-01-01T00:00:00.000Z'),
     } as unknown as UserDocument;
     usersService.findByEmailForAuthentication.mockResolvedValue(user);
-    jest.spyOn(bcrypt, 'compare').mockImplementation(async () => true);
+    jest.mocked(bcrypt.compare).mockResolvedValue(true);
     jwtService.signAsync.mockResolvedValue('signed-token');
 
     const result = await authService.login({

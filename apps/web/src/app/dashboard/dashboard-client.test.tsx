@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import DashboardClient from "./dashboard-client";
 import { ApiError, DashboardSummary, dashboardApi } from "../../lib/api";
 
@@ -77,7 +83,11 @@ describe("DashboardClient", () => {
 
     expect(await screen.findByText("$105.00")).toBeInTheDocument();
     expect(screen.getByText("$20.00")).toBeInTheDocument();
-    expect(screen.getByText("$12.50")).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Expenses").closest("article")!).getByText(
+        "$12.50",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("$7.50")).toBeInTheDocument();
     expect(
       screen.getByText("No transactions recorded yet."),

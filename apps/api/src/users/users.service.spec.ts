@@ -4,6 +4,10 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './user.schema';
 import { normalizeEmail, UsersService } from './users.service';
 
+jest.mock('bcryptjs', () => ({
+  hash: jest.fn(),
+}));
+
 describe('UsersService', () => {
   it('normalizes email consistently', () => {
     expect(normalizeEmail('  USER@Example.COM ')).toBe('user@example.com');
@@ -36,7 +40,7 @@ describe('UsersService', () => {
     };
     const create = jest.fn().mockResolvedValue(user);
     const service = new UsersService({ create } as unknown as Model<User>);
-    const hashSpy = jest.spyOn(bcrypt, 'hash').mockResolvedValue('stored-hash');
+    jest.mocked(bcrypt.hash).mockResolvedValue('stored-hash');
 
     const result = await service.createUser({
       name: ' Example User ',
@@ -44,7 +48,7 @@ describe('UsersService', () => {
       password: 'A-Strong-Password123!',
     });
 
-    expect(hashSpy).toHaveBeenCalledWith('A-Strong-Password123!', 12);
+    expect(bcrypt.hash).toHaveBeenCalledWith('A-Strong-Password123!', 12);
     expect(create).toHaveBeenCalledWith({
       name: 'Example User',
       email: 'user@example.com',
