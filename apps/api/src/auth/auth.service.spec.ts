@@ -1,7 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { UserDocument } from '../users/user.schema';
@@ -51,7 +50,7 @@ describe('AuthService', () => {
     await expect(
       authService.login({ email: 'missing@example.com', password: 'password' }),
     ).rejects.toThrow(new UnauthorizedException('Invalid email or password.'));
-    expect(bcrypt.compare).toHaveBeenCalledWith(
+    expect(bcryptMock.compare).toHaveBeenCalledWith(
       'password',
       expect.any(String),
     );

@@ -1,6 +1,5 @@
 import { ConflictException } from '@nestjs/common';
 import { Model } from 'mongoose';
-import * as bcrypt from 'bcryptjs';
 import { User } from './user.schema';
 import { normalizeEmail, UsersService } from './users.service';
 
