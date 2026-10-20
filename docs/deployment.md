@@ -24,6 +24,7 @@ CSRF protection and validating browser behavior.
 
 ## Prerequisites
 
+- Node.js `>=18.18.0` locally; the CI workflow uses Node 20.
 - A GitHub repository containing the project and root `package-lock.json`.
 - A MongoDB Atlas project and dedicated production database user.
 - A Render Web Service and a Vercel project connected to the repository.
@@ -43,6 +44,18 @@ commits. The API's local `apps/api/.env` is ignored; do not share its contents.
    and both production builds.
 4. Never add deployment credentials to the workflow. Hosting services should integrate
    directly with the repository and hold their environment values in their own dashboards.
+
+### Dependency security gate
+
+The production dependency audit run during this preparation (October 20, 2026) found zero
+critical and five high-severity advisories after moving the frontend to the patched
+Next.js `15.5.28` release. The remaining high findings include `@nestjs/platform-express`,
+`multer`, `js-yaml`, `lodash`, and `postcss`; npm's suggested framework fixes require a
+major upgrade to NestJS 12 and Next.js 16. Do not treat a passing build as a security
+clearance or launch a public finance service while these findings remain unreviewed.
+Plan and test the framework upgrades, or have a qualified reviewer assess the reachable
+paths and explicitly accept the residual risk before public launch. Re-run
+`npm audit --omit=dev` immediately before deployment because advisory data changes.
 
 ## MongoDB Atlas
 
@@ -83,8 +96,7 @@ Create a **Web Service** connected to the GitHub repository with these settings:
 The repository-root directory is important: npm workspaces and the committed root
 `package-lock.json` are used for installation. `npm run build:api` builds the API to
 `apps/api/dist/main.js`; the start command executes that generated production entry point.
-The API listens on `0.0.0.0` and the `PORT` supplied by Render (defaulting to `3001` only
-for local use).
+The API listens on `0.0.0.0` and the `PORT` supplied by Render (defaulting to `3001` only for local use).
 
 Set these Render environment variables:
 
