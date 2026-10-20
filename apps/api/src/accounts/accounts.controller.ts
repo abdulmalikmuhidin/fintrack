@@ -20,6 +20,7 @@ import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -62,6 +63,7 @@ export class AccountsController {
   @ApiOperation({ summary: 'Get one owned account' })
   @ApiOkResponse({ description: 'Owned account.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   async get(
     @CurrentUser() user: PublicUser,
     @Param('id') accountId: string,
@@ -75,6 +77,7 @@ export class AccountsController {
   @ApiOkResponse({ description: 'Updated account.' })
   @ApiBadRequestResponse({ description: 'Input validation failed.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   async update(
     @CurrentUser() user: PublicUser,
@@ -93,6 +96,8 @@ export class AccountsController {
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
   @ApiConflictResponse({ description: 'Account has transactions and cannot be deleted.' })
+  @ApiNoContentResponse({ description: 'Account deleted.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   async remove(
     @CurrentUser() user: PublicUser,
     @Param('id') accountId: string,

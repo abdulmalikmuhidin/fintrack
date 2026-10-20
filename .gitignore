@@ -33,6 +33,7 @@ Thumbs.db
 
 # Testing
 coverage/
+apps/*/coverage/
 .nyc_output/
 
 # Misc

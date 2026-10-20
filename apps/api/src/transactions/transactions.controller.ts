@@ -17,7 +17,6 @@ import { TrustedOriginGuard } from '../auth/guards/trusted-origin.guard';
 import { PublicUser } from '../users/user.types';
 import {
   ApiBadRequestResponse,
-  ApiConflictResponse,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -53,6 +52,7 @@ export class TransactionsController {
   @ApiCreatedResponse({ description: 'Created transaction with integer minor-unit amount.' })
   @ApiBadRequestResponse({ description: 'Input validation failed.' })
   @ApiNotFoundResponse({ description: 'Account is missing or not owned by the user.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   async create(
     @CurrentUser() user: PublicUser,
@@ -78,6 +78,7 @@ export class TransactionsController {
     },
   })
   @ApiBadRequestResponse({ description: 'Query validation failed.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   async list(
     @CurrentUser() user: PublicUser,
     @Query() query: TransactionQueryDto,
@@ -89,6 +90,7 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Get one owned transaction' })
   @ApiOkResponse({ description: 'Owned transaction.' })
   @ApiNotFoundResponse({ description: 'Transaction is missing or not owned by the user.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   async get(
     @CurrentUser() user: PublicUser,
     @Param('id') transactionId: string,
@@ -104,6 +106,7 @@ export class TransactionsController {
   @ApiOkResponse({ description: 'Updated transaction.' })
   @ApiBadRequestResponse({ description: 'Input validation failed.' })
   @ApiNotFoundResponse({ description: 'Transaction or target account is missing or not owned.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   async update(
     @CurrentUser() user: PublicUser,
@@ -125,6 +128,7 @@ export class TransactionsController {
   @ApiOperation({ summary: 'Delete an owned transaction' })
   @ApiNoContentResponse({ description: 'Transaction deleted.' })
   @ApiNotFoundResponse({ description: 'Transaction is missing or not owned by the user.' })
+  @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   @ApiForbiddenResponse({ description: 'Request origin is not allowed.' })
   async remove(
     @CurrentUser() user: PublicUser,

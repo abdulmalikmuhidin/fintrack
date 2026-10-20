@@ -71,7 +71,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Log in and set the HttpOnly session cookie' })
   @ApiBody({ type: LoginDto })
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     description: 'Login succeeded. The fintrack_session cookie is set; no JWT is returned in the response body.',
     schema: {
       type: 'object',

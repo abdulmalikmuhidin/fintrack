@@ -5,6 +5,7 @@ import { PublicUser } from '../users/user.types';
 import { DashboardSummaryQueryDto } from './dto/dashboard-summary-query.dto';
 import { DashboardService } from './dashboard.service';
 import {
+  ApiBadRequestResponse,
   ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
@@ -29,6 +30,7 @@ export class DashboardController {
     description:
       'All money values are integer minor units. Totals are kept separate per currency.',
   })
+  @ApiBadRequestResponse({ description: 'Invalid or reversed reporting date range.' })
   @ApiUnauthorizedResponse({ description: 'Session is missing, invalid, or expired.' })
   summary(
     @CurrentUser() user: PublicUser,
