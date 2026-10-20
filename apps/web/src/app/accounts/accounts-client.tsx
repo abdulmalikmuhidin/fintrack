@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Account,
@@ -28,20 +28,31 @@ export default function AccountsClient() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const loadVersion = useRef(0);
 
   const load = useCallback(async () => {
+    const requestId = ++loadVersion.current;
     setLoading(true);
     setError('');
     try {
-      setAccounts(await accountsApi.list());
+      const nextAccounts = await accountsApi.list();
+      if (requestId !== loadVersion.current) {
+        return;
+      }
+      setAccounts(nextAccounts);
     } catch (caught) {
+      if (requestId !== loadVersion.current) {
+        return;
+      }
       if (caught instanceof ApiError && caught.status === 401) {
         router.replace('/login');
         return;
       }
       setError(caught instanceof ApiError ? caught.message : 'Unable to load accounts.');
     } finally {
-      setLoading(false);
+      if (requestId === loadVersion.current) {
+        setLoading(false);
+      }
     }
   }, [router]);
 
