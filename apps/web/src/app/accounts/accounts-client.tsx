@@ -80,7 +80,6 @@ export default function AccountsClient() {
       }
       setForm(emptyForm);
       setEditingId(null);
-      await load();
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         router.replace('/login');
@@ -113,7 +112,6 @@ export default function AccountsClient() {
         setEditingId(null);
         setForm(emptyForm);
       }
-      await load();
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         router.replace('/login');
