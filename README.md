@@ -2,6 +2,10 @@
 
 A full-stack personal finance application built with Next.js, NestJS, and MongoDB.
 
+FinTrack currently supports cookie-authenticated user accounts, currency-specific
+accounts and transactions, and a dashboard built from recorded financial activity.
+Budgets, transfers, opening balances, and currency conversion are not implemented.
+
 ## 🏗️ Project Structure
 
 ```
@@ -9,6 +13,8 @@ fintrack/
 ├── apps/
 │   ├── web/          # Next.js frontend application
 │   └── api/          # NestJS backend API
+├── docs/             # Architecture, data model, security, and test notes
+├── .github/workflows # GitHub Actions quality checks
 ├── package.json      # Root workspace configuration
 └── README.md
 ```
@@ -20,6 +26,7 @@ fintrack/
 - Node.js >= 18.0.0
 - npm >= 9.0.0
 - MongoDB Atlas account (or local MongoDB instance)
+- A MongoDB deployment with replica-set/transaction support for finance writes
 
 ### Installation
 
@@ -31,7 +38,7 @@ fintrack/
 
 2. Install all dependencies:
    ```bash
-   npm run install:all
+   npm ci
    ```
 
 3. Set up environment variables (keep local secrets out of Git):
@@ -63,6 +70,10 @@ fintrack/
    different ports during development, but production deployments must use the same site
    (for example, `app.example.com` and `api.example.com`) and HTTPS. Auth POST requests
    require an `Origin` matching `FRONTEND_URL`.
+
+   `MONGODB_URI` must point to a reachable database. The app intentionally does not silently
+   switch to an in-memory database when Atlas is unreachable. Atlas network access must allow
+   the API host, and the database user must have the minimum required database permissions.
 
 ### Development
 
@@ -96,6 +107,37 @@ npm run build:api
 npm run build:web
 ```
 
+### Verification
+
+Run from the repository root:
+
+```bash
+npm test                 # API and frontend unit tests
+npm run test:coverage    # Coverage reports for both applications
+npm run lint             # API ESLint and Next.js lint
+npm run typecheck        # API and frontend TypeScript checks
+npm run build            # Production API and frontend builds
+```
+
+There is currently no configured browser E2E suite. Backend tests are isolated unit tests
+and do not require MongoDB credentials. See [docs/testing.md](docs/testing.md) for scope,
+coverage-report locations, and known gaps.
+
+### API documentation
+
+With the API running, Swagger UI is available at `http://localhost:3001/docs`; its
+OpenAPI operations are generated from the actual NestJS controllers and DTOs. Protected
+operations use the `fintrack_session` cookie.
+
+### Deployment preparation
+
+- Configure real `MONGODB_URI`, `JWT_SECRET`, and `FRONTEND_URL` values in the deployment
+  environment. Never put secrets in source control or `NEXT_PUBLIC_*`.
+- Use HTTPS and a same-site frontend/API host arrangement for the cookie session.
+- Allow the API's outbound network in MongoDB Atlas and use a least-privilege database user.
+- Run `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` before
+  releasing. This repository has no deployment workflow.
+
 ### Production
 
 Start production builds:
@@ -119,6 +161,9 @@ cd apps/web && npm run start
 | `npm run build:web` | Build frontend |
 | `npm run lint` | Lint all applications |
 | `npm run test` | Run tests for all applications |
+| `npm run test:coverage` | Generate API and frontend coverage reports |
+| `npm run lint` | Run API ESLint and Next.js lint |
+| `npm run typecheck` | Type-check both applications |
 | `npm run install:all` | Install dependencies for all workspaces |
 
 ## 🌐 Environment Variables
@@ -136,6 +181,9 @@ cd apps/web && npm run start
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NEXT_PUBLIC_API_URL` | Backend API base URL | http://localhost:3001/api |
+
+The API also validates `JWT_SECRET` and `JWT_EXPIRES_IN_SECONDS` at startup. The example
+files use placeholders only; generate independent strong secrets for each environment.
 
 ## 📡 API Endpoints
 
@@ -288,12 +336,18 @@ range rather than returning an imprecise financial value.
 - Global API prefix is set to `/api`
 - Environment variables are loaded and validated via `@nestjs/config`
 - The API requires `MONGODB_URI` and a strong `JWT_SECRET` at startup
+- Swagger UI is served at `/docs` by the API
+- See [docs/architecture.md](docs/architecture.md), [docs/database-design.md](docs/database-design.md),
+  [docs/api.md](docs/api.md), [docs/security.md](docs/security.md), and
+  [docs/testing.md](docs/testing.md) for implementation details
 
 ## 🔒 Security
 
 - Never commit `.env` files to version control
 - Use strong passwords for MongoDB connections
 - Keep dependencies updated
+- Authentication uses short-lived HttpOnly JWT cookies; see [docs/security.md](docs/security.md)
+  for design and limitations
 
 ## 📄 License
 

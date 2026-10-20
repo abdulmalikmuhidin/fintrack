@@ -8,8 +8,11 @@
     "start:dev": "node --watch --require ts-node/register src/main.ts",
     "start:debug": "node --watch --inspect --require ts-node/register src/main.ts",
     "start:prod": "node dist/main.js",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest"
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.8",
@@ -19,6 +22,7 @@
     "@nestjs/mongoose": "^10.0.2",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.8",
+    "@nestjs/swagger": "^7.4.2",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",

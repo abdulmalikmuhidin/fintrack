@@ -14,7 +14,13 @@
     "build:api": "npm --prefix apps/api run build",
     "build:web": "npm --prefix apps/web run build",
     "lint": "npm --prefix apps/api run lint && npm --prefix apps/web run lint",
-    "test": "npm --prefix apps/api run test",
+    "typecheck": "npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck",
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "npm --prefix apps/api run test",
+    "test:web": "npm --prefix apps/web run test",
+    "test:coverage": "npm run test:coverage:api && npm run test:coverage:web",
+    "test:coverage:api": "npm --prefix apps/api run test:coverage",
+    "test:coverage:web": "npm --prefix apps/web run test:coverage",
     "install:all": "npm install"
   },
   "devDependencies": {

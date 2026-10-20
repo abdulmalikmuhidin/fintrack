@@ -50,6 +50,23 @@ describe('AuthService', () => {
     expect(jwtService.signAsync).not.toHaveBeenCalled();
   });
 
+  it('returns the same unauthorized response for an incorrect password', async () => {
+    const user = {
+      _id: { toString: () => '65aa00000000000000000001' },
+      name: 'Example User',
+      email: 'user@example.com',
+      passwordHash: 'stored-hash',
+      createdAt: new Date('2025-01-01T00:00:00.000Z'),
+    } as unknown as UserDocument;
+    usersService.findByEmailForAuthentication.mockResolvedValue(user);
+    jest.spyOn(bcrypt, 'compare').mockImplementation(async () => false);
+
+    await expect(
+      authService.login({ email: 'user@example.com', password: 'incorrect' }),
+    ).rejects.toThrow(new UnauthorizedException('Invalid email or password.'));
+    expect(jwtService.signAsync).not.toHaveBeenCalled();
+  });
+
   it('issues a subject-based token and only returns public user data', async () => {
     const user = {
       _id: { toString: () => '65aa00000000000000000001' },
