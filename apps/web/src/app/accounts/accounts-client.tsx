@@ -70,10 +70,12 @@ export default function AccountsClient() {
     setSaving(true);
     try {
       if (editingId) {
-        await accountsApi.update(editingId, cleaned);
+        const updated = await accountsApi.update(editingId, cleaned);
+        setAccounts((previous) => previous.map((account) => (account.id === updated.id ? updated : account)));
         setNotice('Account updated.');
       } else {
-        await accountsApi.create(cleaned);
+        const created = await accountsApi.create(cleaned);
+        setAccounts((previous) => [created, ...previous]);
         setNotice('Account created.');
       }
       setForm(emptyForm);
@@ -105,6 +107,7 @@ export default function AccountsClient() {
     setNotice('');
     try {
       await accountsApi.remove(account.id);
+      setAccounts((previous) => previous.filter((item) => item.id !== account.id));
       setNotice('Account deleted.');
       if (editingId === account.id) {
         setEditingId(null);
@@ -125,7 +128,7 @@ export default function AccountsClient() {
       <div>
         <h2 className="text-xl font-semibold text-gray-900">Your accounts</h2>
         {loading ? (
-          <p className="mt-4 text-gray-600" role="status">Loading accounts…</p>
+          <p className="mt-4 text-gray-600" aria-live="polite" aria-busy="true">Loading accounts…</p>
         ) : error && accounts.length === 0 ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             <p role="alert">{error}</p>
@@ -156,7 +159,7 @@ export default function AccountsClient() {
         {error && accounts.length > 0 && (
           <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">{error}</p>
         )}
-        {notice && <p className="mt-4 text-sm text-green-800" role="status">{notice}</p>}
+        {notice && <p className="mt-4 text-sm text-green-800" role="status" aria-live="polite">{notice}</p>}
       </div>
 
       <form className="h-fit space-y-4 rounded-xl border border-gray-200 bg-white p-5" onSubmit={save}>
