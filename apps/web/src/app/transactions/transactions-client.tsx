@@ -282,13 +282,13 @@ export default function TransactionsClient() {
           {accounts.length === 0 && <p className="mt-1 text-sm text-amber-800">You need an account before recording a transaction. Add one on the <a className="underline" href="/accounts">Accounts page</a>.</p>}
         </div>
         <div>
-          <label htmlFor="transaction-account" className="mb-1 block text-sm font-medium text-gray-700">Account</label>
+          <label htmlFor="transaction-account" className="mb-1 block text-sm font-medium text-gray-700">Transaction account</label>
           <select id="transaction-account" required value={form.accountId} onChange={(event) => setForm({ ...form, accountId: event.target.value })} className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900" disabled={!accounts.length}>
             {accounts.map((account) => <option key={account.id} value={account.id}>{account.name} ({account.currency})</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="transaction-type" className="mb-1 block text-sm font-medium text-gray-700">Type</label>
+          <label htmlFor="transaction-type" className="mb-1 block text-sm font-medium text-gray-700">Transaction type</label>
           <select id="transaction-type" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value as TransactionType })} className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900">
             <option value="expense">Expense</option><option value="income">Income</option>
           </select>
@@ -298,11 +298,11 @@ export default function TransactionsClient() {
           <input id="transaction-amount" required inputMode="decimal" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" placeholder={fractionDigits ? `0.${'0'.repeat(fractionDigits)}` : '0'} />
         </div>
         <div>
-          <label htmlFor="transaction-category" className="mb-1 block text-sm font-medium text-gray-700">Category</label>
+          <label htmlFor="transaction-category" className="mb-1 block text-sm font-medium text-gray-700">Transaction category</label>
           <input id="transaction-category" required maxLength={60} value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" />
         </div>
         <div>
-          <label htmlFor="transaction-date" className="mb-1 block text-sm font-medium text-gray-700">Date</label>
+          <label htmlFor="transaction-date" className="mb-1 block text-sm font-medium text-gray-700">Transaction date</label>
           <input id="transaction-date" type="date" required value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900" />
         </div>
         <div>
@@ -337,27 +337,27 @@ export default function TransactionsClient() {
 
         <div className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
           <div>
-            <label htmlFor="filter-account" className="mb-1 block text-xs font-medium text-gray-600">Account</label>
+            <label htmlFor="filter-account" className="mb-1 block text-xs font-medium text-gray-600">Filter account</label>
             <select id="filter-account" value={accountFilter} onChange={(event) => changeFilter(setAccountFilter, event.target.value)} className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm">
               <option value="">All accounts</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}
             </select>
           </div>
           <div>
-            <label htmlFor="filter-type" className="mb-1 block text-xs font-medium text-gray-600">Type</label>
+            <label htmlFor="filter-type" className="mb-1 block text-xs font-medium text-gray-600">Filter type</label>
             <select id="filter-type" value={typeFilter} onChange={(event) => changeFilter(setTypeFilter, event.target.value)} className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm">
               <option value="">All types</option><option value="income">Income</option><option value="expense">Expense</option>
             </select>
           </div>
           <div>
-            <label htmlFor="filter-category" className="mb-1 block text-xs font-medium text-gray-600">Category</label>
+            <label htmlFor="filter-category" className="mb-1 block text-xs font-medium text-gray-600">Filter category</label>
             <input id="filter-category" value={categoryFilter} onChange={(event) => changeFilter(setCategoryFilter, event.target.value)} className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm" placeholder="Exact category" />
           </div>
           <div>
-            <label htmlFor="filter-start" className="mb-1 block text-xs font-medium text-gray-600">From</label>
+            <label htmlFor="filter-start" className="mb-1 block text-xs font-medium text-gray-600">Filter from</label>
             <input id="filter-start" type="date" value={startDate} onChange={(event) => changeFilter(setStartDate, event.target.value)} className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm" />
           </div>
           <div>
-            <label htmlFor="filter-end" className="mb-1 block text-xs font-medium text-gray-600">To</label>
+            <label htmlFor="filter-end" className="mb-1 block text-xs font-medium text-gray-600">Filter to</label>
             <input id="filter-end" type="date" value={endDate} onChange={(event) => changeFilter(setEndDate, event.target.value)} className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm" />
           </div>
         </div>

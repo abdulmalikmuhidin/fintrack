@@ -63,13 +63,13 @@ describe("TransactionsClient", () => {
     render(<TransactionsClient />);
 
     await screen.findByRole("option", { name: "Everyday (USD)" });
-    fireEvent.change(screen.getByLabelText("Type"), {
+    fireEvent.change(screen.getByLabelText("Transaction type"), {
       target: { value: "expense" },
     });
     fireEvent.change(screen.getByLabelText("Amount (USD)"), {
       target: { value: "12.50" },
     });
-    fireEvent.change(screen.getByLabelText("Category"), {
+    fireEvent.change(screen.getByLabelText("Transaction category"), {
       target: { value: "Food" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Add transaction" }));
