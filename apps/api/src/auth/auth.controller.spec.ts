@@ -1,5 +1,4 @@
 import { GUARDS_METADATA } from '@nestjs/common/constants';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { TrustedOriginGuard } from './guards/trusted-origin.guard';
 
