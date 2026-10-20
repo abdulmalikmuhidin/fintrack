@@ -138,7 +138,7 @@ export default function AccountsClient() {
     <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div>
         <h2 className="text-xl font-semibold text-gray-900">Your accounts</h2>
-        {loading ? (
+        {loading && accounts.length === 0 && !notice ? (
           <p className="mt-4 text-gray-600" aria-live="polite" aria-busy="true">Loading accounts…</p>
         ) : error && accounts.length === 0 ? (
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
