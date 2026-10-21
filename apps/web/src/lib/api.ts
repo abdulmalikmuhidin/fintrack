@@ -126,42 +126,29 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Returns the base API URL.
+ *
+ * - In production the frontend uses a relative path (`/api`) so every
+ *   browser request stays on the same origin. A Next.js rewrite proxies
+ *   those requests to the real backend.
+ * - In development the full URL is used (e.g. `http://localhost:3001/api`).
+ */
 function getApiUrl(): string {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (!configuredUrl) {
     throw new Error('NEXT_PUBLIC_API_URL must be set before building the frontend.');
   }
-
-  if (process.env.NODE_ENV === 'production') {
-    let parsedUrl: URL;
-    try {
-      parsedUrl = new URL(configuredUrl);
-    } catch {
-      throw new Error('NEXT_PUBLIC_API_URL must be a valid HTTPS API URL.');
-    }
-
-    const apiPath = parsedUrl.pathname.replace(/\/+$/, '');
-    if (
-      parsedUrl.protocol !== 'https:' ||
-      apiPath !== '/api' ||
-      parsedUrl.username ||
-      parsedUrl.password ||
-      parsedUrl.search ||
-      parsedUrl.hash ||
-      ['localhost', '127.0.0.1', '[::1]'].includes(parsedUrl.hostname)
-    ) {
-      throw new Error(
-        'NEXT_PUBLIC_API_URL must be an HTTPS production URL ending in /api.',
-      );
-    }
-  }
-
   return configuredUrl.replace(/\/+$/, '');
 }
 
 const API_URL = getApiUrl();
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  baseUrl?: string,
+): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
   if (init.body && !headers.has('Content-Type')) {
@@ -170,7 +157,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await fetch(`${baseUrl ?? API_URL}${path}`, {
       ...init,
       headers,
       credentials: 'include',
@@ -345,11 +332,22 @@ export const dashboardApi = {
   },
 };
 
+/**
+ * Fetch the current user from the API using a server-side token.
+ *
+ * In production, `API_BACKEND_URL` is used to call the backend directly
+ * (server-to-server), avoiding a round-trip through the rewrite proxy.
+ * In development `API_BACKEND_URL` is not set, so the call falls back to
+ * `NEXT_PUBLIC_API_URL` which points at the local API.
+ */
 export async function getCurrentUserForServer(
   token: string,
 ): Promise<PublicUser> {
-  const response = await request<UserResponse>('/auth/me', {
-    headers: { Cookie: `fintrack_session=${token}` },
-  });
+  const serverUrl = process.env.API_BACKEND_URL?.trim()?.replace(/\/+$/, '');
+  const response = await request<UserResponse>(
+    '/auth/me',
+    { headers: { Cookie: `fintrack_session=${token}` } },
+    serverUrl || undefined,
+  );
   return response.user;
 }
