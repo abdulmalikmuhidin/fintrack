@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -8,12 +8,16 @@ export default function Home() {
           FinTrack
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          A clear, private place to organize accounts and track income and expenses.
+          A clear, private place to organize accounts and track income and
+          expenses.
         </p>
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-emerald-900 mb-2">Your finances, organized</h2>
+          <h2 className="text-lg font-semibold text-emerald-900 mb-2">
+            Your finances, organized
+          </h2>
           <p className="text-emerald-900">
-            Create accounts, record transactions, and review your financial activity with currency-aware summaries.
+            Create accounts, record transactions, and review your financial
+            activity with currency-aware summaries.
           </p>
         </div>
         <div className="mb-8 flex justify-center gap-3">
@@ -33,15 +37,23 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="font-semibold text-gray-900 mb-2">📊 Dashboard</h3>
-            <p className="text-gray-600">Visualize your spending patterns and financial health</p>
+            <p className="text-gray-600">
+              Visualize your spending patterns and financial health
+            </p>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">💰 Transactions</h3>
-            <p className="text-gray-600">Track income and expenses with categories and tags</p>
+            <h3 className="font-semibold text-gray-900 mb-2">
+              💰 Transactions
+            </h3>
+            <p className="text-gray-600">
+              Track income and expenses with categories and tags
+            </p>
           </div>
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">📈 Dashboard</h3>
-            <p className="text-gray-600">Review recorded income, expenses, and category breakdowns</p>
+            <h3 className="font-semibold text-gray-900 mb-2">📈 Accounts</h3>
+            <p className="text-gray-600">
+              Manage your financial accounts and view their balances
+            </p>
           </div>
         </div>
         <footer className="mt-12 text-sm text-gray-500">
@@ -49,5 +61,5 @@ export default function Home() {
         </footer>
       </div>
     </main>
-  )
+  );
 }
