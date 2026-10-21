@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ApiError, authApi } from '../../lib/api';
 
 export default function LogoutButton() {
-  const router = useRouter();
   const [error, setError] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -14,15 +12,15 @@ export default function LogoutButton() {
     setIsLoggingOut(true);
     try {
       await authApi.logout();
-      router.replace('/login');
-      router.refresh();
+      // Full page navigation ensures the cleared cookie takes effect
+      // and the server sees the unauthenticated state.
+      window.location.replace('/login');
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiError
           ? caughtError.message
           : 'Unable to log out. Please try again.',
       );
-    } finally {
       setIsLoggingOut(false);
     }
   }
@@ -35,7 +33,7 @@ export default function LogoutButton() {
         disabled={isLoggingOut}
         className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoggingOut ? 'Logging out…' : 'Log out'}
+        {isLoggingOut ? 'Logging out\u2026' : 'Log out'}
       </button>
       {error && (
         <p className="max-w-xs text-right text-sm text-red-700" role="alert">

@@ -2,11 +2,9 @@
 
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ApiError, authApi } from '../../lib/api';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,15 +21,15 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await authApi.login({ email: email.trim(), password });
-      router.replace('/dashboard');
-      router.refresh();
+      // Full page navigation ensures the browser sends the freshly-set
+      // session cookie with the request so the server component can read it.
+      window.location.replace('/dashboard');
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiError
           ? caughtError.message
           : 'Unable to log in. Please try again.',
       );
-    } finally {
       setIsSubmitting(false);
     }
   }
@@ -92,7 +90,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-emerald-700 px-4 py-2.5 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? 'Logging in…' : 'Log in'}
+            {isSubmitting ? 'Logging in\u2026' : 'Log in'}
           </button>
         </form>
 
