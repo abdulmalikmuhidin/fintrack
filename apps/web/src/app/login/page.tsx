@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { ApiError, authApi } from '../../lib/api';
+import { navigateReplace } from '../../lib/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,7 +24,7 @@ export default function LoginPage() {
       await authApi.login({ email: email.trim(), password });
       // Full page navigation ensures the browser sends the freshly-set
       // session cookie with the request so the server component can read it.
-      window.location.replace('/dashboard');
+      navigateReplace('/dashboard');
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiError

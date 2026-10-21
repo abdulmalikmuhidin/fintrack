@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ApiError, authApi } from '../../lib/api';
+import { navigateReplace } from '../../lib/navigation';
 
 export default function LogoutButton() {
   const [error, setError] = useState('');
@@ -14,7 +15,7 @@ export default function LogoutButton() {
       await authApi.logout();
       // Full page navigation ensures the cleared cookie takes effect
       // and the server sees the unauthenticated state.
-      window.location.replace('/login');
+      navigateReplace('/login');
     } catch (caughtError) {
       setError(
         caughtError instanceof ApiError

@@ -1,15 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import LoginPage from "./page";
 import { ApiError, authApi } from "../../lib/api";
+import { navigateReplace } from "../../lib/navigation";
 
-const mockLocationReplace = jest.fn();
-
-beforeAll(() => {
-  Object.defineProperty(window, "location", {
-    value: { replace: mockLocationReplace },
-    writable: true,
-  });
-});
+jest.mock("../../lib/navigation", () => ({
+  navigateReplace: jest.fn(),
+}));
 
 jest.mock("../../lib/api", () => ({
   ApiError: class ApiError extends Error {
@@ -56,7 +52,7 @@ describe("LoginPage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Invalid email or password.",
     );
-    expect(mockLocationReplace).not.toHaveBeenCalled();
+    expect(navigateReplace).not.toHaveBeenCalled();
   });
 
   it("sends credentials and navigates to the protected dashboard on success", async () => {
@@ -83,6 +79,6 @@ describe("LoginPage", () => {
         password: "Strong-password123",
       }),
     );
-    expect(mockLocationReplace).toHaveBeenCalledWith("/dashboard");
+    expect(navigateReplace).toHaveBeenCalledWith("/dashboard");
   });
 });

@@ -1,15 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import LogoutButton from "./logout-button";
 import { authApi } from "../../lib/api";
+import { navigateReplace } from "../../lib/navigation";
 
-const mockLocationReplace = jest.fn();
-
-beforeAll(() => {
-  Object.defineProperty(window, "location", {
-    value: { replace: mockLocationReplace },
-    writable: true,
-  });
-});
+jest.mock("../../lib/navigation", () => ({
+  navigateReplace: jest.fn(),
+}));
 
 jest.mock("../../lib/api", () => ({
   ApiError: class ApiError extends Error {
@@ -31,6 +27,6 @@ describe("LogoutButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "Log out" }));
 
     await waitFor(() => expect(authApi.logout).toHaveBeenCalled());
-    expect(mockLocationReplace).toHaveBeenCalledWith("/login");
+    expect(navigateReplace).toHaveBeenCalledWith("/login");
   });
 });
