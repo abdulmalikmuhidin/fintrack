@@ -127,17 +127,18 @@ export class ApiError extends Error {
 }
 
 /**
- * Returns the base API URL.
+ * Returns the base API URL for client-side requests.
  *
- * - In production the frontend uses a relative path (`/api`) so every
- *   browser request stays on the same origin. A Next.js rewrite proxies
- *   those requests to the real backend.
- * - In development the full URL is used (e.g. `http://localhost:3001/api`).
+ * - In production, defaulting to relative `/api` ensures all browser requests
+ *   are same-origin and proxied via Next.js rewrites to avoid cross-site cookie
+ *   isolation issues.
+ * - If an absolute HTTPS URL is provided, it is used directly.
+ * - In development, falls back to `http://localhost:3001/api`.
  */
 function getApiUrl(): string {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (!configuredUrl) {
-    throw new Error('NEXT_PUBLIC_API_URL must be set before building the frontend.');
+    return '/api';
   }
   return configuredUrl.replace(/\/+$/, '');
 }
@@ -333,21 +334,40 @@ export const dashboardApi = {
 };
 
 /**
+ * Resolves the absolute backend API URL for server-side Next.js execution.
+ * Node.js fetch requires an absolute URL.
+ */
+function getServerApiBaseUrl(): string {
+  const backendUrl = process.env.API_BACKEND_URL?.trim();
+  if (backendUrl && backendUrl.startsWith('http')) {
+    const clean = backendUrl.replace(/\/+$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+  const publicUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (publicUrl && publicUrl.startsWith('http')) {
+    const clean = publicUrl.replace(/\/+$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api`;
+  }
+  return 'http://localhost:3001/api';
+}
+
+/**
  * Fetch the current user from the API using a server-side token.
  *
- * In production, `API_BACKEND_URL` is used to call the backend directly
- * (server-to-server), avoiding a round-trip through the rewrite proxy.
- * In development `API_BACKEND_URL` is not set, so the call falls back to
- * `NEXT_PUBLIC_API_URL` which points at the local API.
+ * In server components (like `verifyPageSession`), an absolute URL is required
+ * by Node.js fetch. This connects directly to the backend.
  */
 export async function getCurrentUserForServer(
   token: string,
 ): Promise<PublicUser> {
-  const serverUrl = process.env.API_BACKEND_URL?.trim()?.replace(/\/+$/, '');
+  const serverBaseUrl = getServerApiBaseUrl();
   const response = await request<UserResponse>(
     '/auth/me',
     { headers: { Cookie: `fintrack_session=${token}` } },
-    serverUrl || undefined,
+    serverBaseUrl,
   );
   return response.user;
 }

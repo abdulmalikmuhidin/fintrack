@@ -126,11 +126,13 @@ export class AuthController {
   }
 
   private cookieOptions(): CookieOptions {
+    const cookieDomain = this.configService.get<string>('COOKIE_DOMAIN')?.trim();
     return {
       httpOnly: true,
       secure: this.configService.get<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
       path: '/',
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
       maxAge:
         this.configService.getOrThrow<number>('JWT_EXPIRES_IN_SECONDS') * 1000,
     };

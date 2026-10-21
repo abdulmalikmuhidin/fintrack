@@ -18,6 +18,7 @@ describe('validateEnvironment', () => {
       JWT_EXPIRES_IN_SECONDS: 900,
       FRONTEND_URL: 'http://localhost:3000',
       SWAGGER_ENABLED: true,
+      COOKIE_DOMAIN: undefined,
     });
   });
 
@@ -78,5 +79,21 @@ describe('validateEnvironment', () => {
         SWAGGER_ENABLED: 'yes',
       }),
     ).toThrow('SWAGGER_ENABLED must be either true or false.');
+  });
+
+  it('validates optional COOKIE_DOMAIN setting', () => {
+    expect(
+      validateEnvironment({
+        ...validEnvironment,
+        COOKIE_DOMAIN: '.example.com',
+      }),
+    ).toMatchObject({ COOKIE_DOMAIN: '.example.com' });
+
+    expect(() =>
+      validateEnvironment({
+        ...validEnvironment,
+        COOKIE_DOMAIN: 'http://example.com',
+      }),
+    ).toThrow('COOKIE_DOMAIN must be a valid domain or subdomain.');
   });
 });

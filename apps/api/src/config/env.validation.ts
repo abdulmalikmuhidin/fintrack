@@ -62,6 +62,15 @@ export function validateEnvironment(
       ? environment.NODE_ENV !== 'production'
       : swaggerSetting === 'true';
 
+  const rawCookieDomain = getString(environment, 'COOKIE_DOMAIN');
+  let cookieDomain: string | undefined;
+  if (rawCookieDomain) {
+    if (rawCookieDomain.includes('/') || rawCookieDomain.includes(':')) {
+      throw new Error('COOKIE_DOMAIN must be a valid domain or subdomain.');
+    }
+    cookieDomain = rawCookieDomain;
+  }
+
   return {
     ...environment,
     MONGODB_URI: mongoUri,
@@ -70,6 +79,7 @@ export function validateEnvironment(
     PORT: port,
     FRONTEND_URL: frontendOrigin,
     SWAGGER_ENABLED: swaggerEnabled,
+    COOKIE_DOMAIN: cookieDomain,
   };
 }
 

@@ -5,15 +5,23 @@ const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: path.join(__dirname, '..', '..'),
   async rewrites() {
-    // In production, proxy /api/* requests to the backend so that cookies
-    // are set on the same domain as the frontend. In development the
-    // frontend calls the API directly (no rewrite needed).
-    const backendUrl = process.env.API_BACKEND_URL?.trim();
-    if (!backendUrl) return [];
+    const rawBackend =
+      process.env.API_BACKEND_URL?.trim() ||
+      (process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+        ? process.env.NEXT_PUBLIC_API_URL.trim()
+        : '');
+
+    if (!rawBackend) return [];
+
+    const cleanBackend = rawBackend.replace(/\/+$/, '');
+    const destinationBase = cleanBackend.endsWith('/api')
+      ? cleanBackend
+      : `${cleanBackend}/api`;
+
     return [
       {
         source: '/api/:path*',
-        destination: `${backendUrl.replace(/\/+$/, '')}/:path*`,
+        destination: `${destinationBase}/:path*`,
       },
     ];
   },
