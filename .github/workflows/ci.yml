@@ -12,6 +12,8 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: https://api.example.com/api
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
