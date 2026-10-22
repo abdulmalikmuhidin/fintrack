@@ -68,7 +68,20 @@ export function validateEnvironment(
     if (rawCookieDomain.includes('/') || rawCookieDomain.includes(':')) {
       throw new Error('COOKIE_DOMAIN must be a valid domain or subdomain.');
     }
-    cookieDomain = rawCookieDomain;
+    const normalized = rawCookieDomain.toLowerCase().replace(/^\.+/, '');
+    const publicSuffixes = [
+      'onrender.com',
+      'vercel.app',
+      'netlify.app',
+      'railway.app',
+      'herokuapp.com',
+      'github.io',
+    ];
+    // If set to a public suffix or cloud provider domain, omit domain attribute
+    // so the cookie is host-only and won't be rejected by browsers.
+    if (!publicSuffixes.includes(normalized) && !normalized.endsWith('.onrender.com') && !normalized.endsWith('.vercel.app')) {
+      cookieDomain = rawCookieDomain;
+    }
   }
 
   return {

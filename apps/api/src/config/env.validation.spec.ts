@@ -89,6 +89,13 @@ describe('validateEnvironment', () => {
       }),
     ).toMatchObject({ COOKIE_DOMAIN: '.example.com' });
 
+    expect(
+      validateEnvironment({
+        ...validEnvironment,
+        COOKIE_DOMAIN: '.onrender.com',
+      }),
+    ).toMatchObject({ COOKIE_DOMAIN: undefined });
+
     expect(() =>
       validateEnvironment({
         ...validEnvironment,

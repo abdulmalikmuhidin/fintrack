@@ -129,13 +129,16 @@ export class ApiError extends Error {
 /**
  * Returns the base API URL for client-side requests.
  *
- * - In production, defaulting to relative `/api` ensures all browser requests
- *   are same-origin and proxied via Next.js rewrites to avoid cross-site cookie
- *   isolation issues.
- * - If an absolute HTTPS URL is provided, it is used directly.
+ * - In the browser during production, always using relative `/api` ensures
+ *   all requests are same-origin and proxied via Next.js rewrites. This guarantees
+ *   that the session cookie is first-party to the frontend domain and available
+ *   both to Next.js Server Components on page navigations and to client fetch requests.
  * - In development, falls back to `http://localhost:3001/api`.
  */
 function getApiUrl(): string {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    return '/api';
+  }
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (!configuredUrl) {
     return '/api';
