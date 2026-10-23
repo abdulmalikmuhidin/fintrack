@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import TransactionsClient from "./transactions-client";
 import {
   Account,
@@ -95,5 +95,25 @@ describe("TransactionsClient", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("Page 0 of 0")).toBeInTheDocument();
+  });
+
+  it("does not show the no-account message while accounts are loading", async () => {
+    let resolveAccounts: (accounts: Account[]) => void = () => {};
+    jest.mocked(accountsApi.list).mockReturnValue(
+      new Promise((resolve) => {
+        resolveAccounts = resolve;
+      }),
+    );
+
+    render(<TransactionsClient />);
+    expect(
+      screen.queryByText(/You need an account before recording a transaction/),
+    ).not.toBeInTheDocument();
+
+    await act(async () => resolveAccounts([account]));
+    expect(await screen.findByRole("option", { name: "Everyday (USD)" })).toBeInTheDocument();
+    expect(
+      screen.queryByText(/You need an account before recording a transaction/),
+    ).not.toBeInTheDocument();
   });
 });
