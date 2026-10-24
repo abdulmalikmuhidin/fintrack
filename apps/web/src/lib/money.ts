@@ -35,10 +35,16 @@ export function minorUnitsToInput(amountMinor: number, currency: string): string
   return `${whole}.${fraction}`;
 }
 
-export function formatMinorUnits(amountMinor: number, currency: string): string {
+export function formatMinorUnits(
+  amountMinor: number,
+  currency: string,
+  locale?: string,
+): string {
   const digits = currencyFractionDigits(currency);
   const amount = amountMinor / 10 ** digits;
-  return new Intl.NumberFormat(undefined, {
+  const resolvedLocale =
+    locale === 'am' ? 'am-ET' : locale === 'en' ? 'en-US' : locale;
+  return new Intl.NumberFormat(resolvedLocale, {
     style: 'currency',
     currency,
   }).format(amount);

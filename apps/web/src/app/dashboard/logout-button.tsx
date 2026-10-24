@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError, authApi } from '../../lib/api';
 import { navigateReplace } from '../../lib/navigation';
 
 export default function LogoutButton() {
+  const t = useTranslations('nav');
+  const tAuth = useTranslations('auth.validation');
   const [error, setError] = useState('');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -20,7 +23,7 @@ export default function LogoutButton() {
       setError(
         caughtError instanceof ApiError
           ? caughtError.message
-          : 'Unable to log out. Please try again.',
+          : tAuth('logoutError'),
       );
       setIsLoggingOut(false);
     }
@@ -34,7 +37,7 @@ export default function LogoutButton() {
         disabled={isLoggingOut}
         className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoggingOut ? 'Logging out\u2026' : 'Log out'}
+        {isLoggingOut ? t('loggingOut') : t('logout')}
       </button>
       {error && (
         <p className="max-w-xs text-right text-sm text-red-700" role="alert">

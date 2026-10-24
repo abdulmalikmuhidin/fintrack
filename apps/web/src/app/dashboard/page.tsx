@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import DashboardClient from './dashboard-client';
 import FinanceNav from '../finance-nav';
 import { verifyPageSession } from '../../lib/page-auth';
@@ -15,13 +16,17 @@ function currentUtcMonth() {
 
 export default async function DashboardPage() {
   const user = await verifyPageSession();
+  const t = await getTranslations('dashboard');
+
   if (!user) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-12">
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-6">
-          <h1 className="text-xl font-semibold text-amber-950">Dashboard unavailable</h1>
-          <p className="mt-2 text-amber-900">FinTrack could not verify your session. Check that the API and database are available.</p>
-          <Link href="/login" className="mt-4 inline-block font-semibold text-amber-950 underline">Return to login</Link>
+          <h1 className="text-xl font-semibold text-amber-950">{t('unavailableTitle')}</h1>
+          <p className="mt-2 text-amber-900">{t('unavailableDesc')}</p>
+          <Link href="/login" className="mt-4 inline-block font-semibold text-amber-950 underline">
+            {t('returnToLogin')}
+          </Link>
         </section>
       </main>
     );

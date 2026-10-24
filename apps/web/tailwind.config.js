@@ -6,7 +6,25 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: [
+          'var(--font-inter)',
+          'var(--font-noto-ethiopic)',
+          'Nyala',
+          'Abyssinica SIL',
+          'Segoe UI',
+          'system-ui',
+          'sans-serif',
+        ],
+        ethiopic: [
+          'var(--font-noto-ethiopic)',
+          'Nyala',
+          'Abyssinica SIL',
+          'sans-serif',
+        ],
+      },
+    },
   },
   plugins: [],
-}
+};

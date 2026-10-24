@@ -1,24 +1,26 @@
-"use client";
+'use client';
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Account,
   ApiError,
   Transaction,
+  TransactionInput,
   TransactionSortField,
   TransactionType,
   accountsApi,
   transactionsApi,
-} from "../../lib/api";
+} from '../../lib/api';
 import {
   currencyFractionDigits,
   formatMinorUnits,
   minorUnitsToInput,
   parseAmountToMinorUnits,
-} from "../../lib/money";
+} from '../../lib/money';
 
-interface TransactionForm {
+interface FormState {
   accountId: string;
   type: TransactionType;
   amount: string;
@@ -27,43 +29,47 @@ interface TransactionForm {
   date: string;
 }
 
-const newForm = (accountId = ""): TransactionForm => ({
-  accountId,
-  type: "expense",
-  amount: "",
-  category: "",
-  description: "",
-  date: new Date().toISOString().slice(0, 10),
-});
+function newForm(accountId = ''): FormState {
+  return {
+    accountId,
+    type: 'expense',
+    amount: '',
+    category: '',
+    description: '',
+    date: new Date().toISOString().slice(0, 10),
+  };
+}
 
 export default function TransactionsClient() {
   const router = useRouter();
+  const t = useTranslations('transactions');
+  const tCommon = useTranslations('common');
+  const tVal = useTranslations('transactions.validation');
+  const locale = useLocale();
+
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [accountsLoaded, setAccountsLoaded] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [typeFilter, setTypeFilter] = useState("");
-  const [accountFilter, setAccountFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [sortBy, setSortBy] = useState<TransactionSortField>("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [form, setForm] = useState<TransactionForm>(newForm());
+  const [accountFilter, setAccountFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [sortBy, setSortBy] = useState<TransactionSortField>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [form, setForm] = useState<FormState>(newForm());
   const [currencyOverride, setCurrencyOverride] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [accountsLoaded, setAccountsLoaded] = useState(false);
+  const listVersion = useRef(0);
 
-  const selectedAccount = useMemo(
-    () => accounts.find((account) => account.id === form.accountId),
-    [accounts, form.accountId],
-  );
+  const selectedAccount = accounts.find((item) => item.id === form.accountId);
   const formCurrency = currencyOverride ?? selectedAccount?.currency;
   const fractionDigits = formCurrency
     ? currencyFractionDigits(formCurrency)
@@ -71,186 +77,184 @@ export default function TransactionsClient() {
 
   const loadAccounts = useCallback(async () => {
     try {
-      const result = await accountsApi.list();
-      setAccounts(result);
-      setAccountsLoaded(true);
-      setForm((previous) => ({
-        ...previous,
-        accountId: previous.accountId || result[0]?.id || "",
-      }));
+      const items = await accountsApi.list();
+      setAccounts(items);
+      setForm((current) =>
+        current.accountId ? current : newForm(items[0]?.id || ''),
+      );
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
-        router.replace("/login");
+        router.replace('/login');
         return;
       }
       setError(
-        caught instanceof ApiError
-          ? caught.message
-          : "Unable to load accounts.",
+        caught instanceof ApiError ? caught.message : tVal('loadError'),
       );
+    } finally {
+      setAccountsLoaded(true);
     }
-  }, [router]);
+  }, [router, tVal]);
 
   useEffect(() => {
     void loadAccounts();
   }, [loadAccounts]);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadTransactions = useCallback(async () => {
+    const requestId = ++listVersion.current;
     setLoading(true);
-    setError("");
-    transactionsApi
-      .list({
+    setError('');
+    try {
+      const response = await transactionsApi.list({
         page,
-        limit,
-        type: typeFilter ? (typeFilter as TransactionType) : undefined,
+        limit: 10,
         accountId: accountFilter || undefined,
+        type: (typeFilter as TransactionType) || undefined,
         category: categoryFilter.trim() || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         sortBy,
         sortOrder,
-      })
-      .then((result) => {
-        if (cancelled) return;
-        setTransactions(result.items);
-        setTotal(result.total);
-        setTotalPages(result.totalPages);
-      })
-      .catch((caught: unknown) => {
-        if (cancelled) return;
-        if (caught instanceof ApiError && caught.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        setError(
-          caught instanceof ApiError
-            ? caught.message
-            : "Unable to load transactions.",
-        );
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+      if (requestId !== listVersion.current) return;
+      setTransactions(response.items);
+      setTotal(response.total);
+      setTotalPages(response.totalPages);
+    } catch (caught) {
+      if (requestId !== listVersion.current) return;
+      if (caught instanceof ApiError && caught.status === 401) {
+        router.replace('/login');
+        return;
+      }
+      setError(
+        caught instanceof ApiError ? caught.message : tVal('loadError'),
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [
     accountFilter,
     categoryFilter,
     endDate,
-    limit,
     page,
     router,
     sortBy,
     sortOrder,
     startDate,
+    tVal,
     typeFilter,
   ]);
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => void loadTransactions(), 150);
+    return () => window.clearTimeout(timeout);
+  }, [loadTransactions]);
+
+  function changeFilter(setter: (value: string) => void, value: string) {
+    setter(value);
+    setPage(1);
+  }
+
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
-    setNotice("");
-    if (!selectedAccount) {
-      setError("Create an account before adding a transaction.");
-      return;
-    }
+    listVersion.current += 1;
+    setError('');
+    setNotice('');
     if (startDate && endDate && startDate > endDate) {
-      setError("The start date must be before or equal to the end date.");
+      setError(tVal('dateOrder'));
       return;
     }
-    const amountMinor = parseAmountToMinorUnits(
-      form.amount,
-      formCurrency ?? selectedAccount.currency,
-    );
-    if (amountMinor === null) {
-      setError(
-        `Enter a positive amount with no more than ${fractionDigits} decimal places (maximum 100,000,000,000 minor units).`,
-      );
+    const currency =
+      formCurrency ?? selectedAccount?.currency;
+    if (!currency || !form.accountId) {
+      setError(tVal('selectAccount'));
       return;
     }
-    if (!form.category.trim() || form.category.trim().length > 60) {
-      setError("Enter a category between 1 and 60 characters.");
+    const amountMinor = parseAmountToMinorUnits(form.amount, currency);
+    if (!amountMinor) {
+      setError(tVal('enterAmount'));
+      return;
+    }
+    if (!form.category.trim()) {
+      setError(tVal('categoryRequired'));
       return;
     }
     if (!form.date || Number.isNaN(Date.parse(form.date))) {
-      setError("Enter a valid transaction date.");
+      setError(tVal('dateRequired'));
       return;
     }
 
+    const input: TransactionInput = {
+      accountId: form.accountId,
+      type: form.type,
+      amountMinor,
+      category: form.category.trim(),
+      description: form.description.trim() ? form.description.trim() : undefined,
+      date: form.date,
+    };
+
     setSaving(true);
     try {
-      const input = {
-        accountId: form.accountId,
-        type: form.type,
-        amountMinor,
-        category: form.category.trim(),
-        description: form.description.trim(),
-        date: form.date,
-      };
       if (editingId) {
         await transactionsApi.update(editingId, input);
-        setNotice("Transaction updated.");
+        setNotice(t('transactionUpdated'));
       } else {
         await transactionsApi.create(input);
-        setNotice("Transaction created.");
+        setNotice(t('transactionCreated'));
       }
-      setForm(newForm(accounts[0]?.id || ""));
-      setCurrencyOverride(null);
       setEditingId(null);
+      setCurrencyOverride(null);
+      setForm(newForm(accounts[0]?.id || ''));
       setPage(1);
-      await loadAccounts();
-      await reloadTransactions(1);
+      await loadTransactions();
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
-        router.replace("/login");
+        router.replace('/login');
         return;
       }
-      setError(
-        caught instanceof ApiError
-          ? caught.message
-          : "Unable to save this transaction.",
-      );
+      setError(caught instanceof ApiError ? caught.message : tVal('saveError'));
     } finally {
       setSaving(false);
     }
   }
 
-  async function reloadTransactions(requestedPage = page) {
+  async function remove(transaction: Transaction) {
+    if (!window.confirm(t('deleteConfirm'))) {
+      return;
+    }
+    listVersion.current += 1;
+    setError('');
+    setNotice('');
     try {
-      const result = await transactionsApi.list({
-        page: requestedPage,
-        limit,
-        type: typeFilter ? (typeFilter as TransactionType) : undefined,
+      await transactionsApi.remove(transaction.id);
+      setNotice(t('transactionDeleted'));
+      const nextPage =
+        transactions.length === 1 && page > 1 ? page - 1 : page;
+      setPage(nextPage);
+      const response = await transactionsApi.list({
+        page: nextPage,
+        limit: 10,
         accountId: accountFilter || undefined,
+        type: (typeFilter as TransactionType) || undefined,
         category: categoryFilter.trim() || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         sortBy,
         sortOrder,
       });
-      if (
-        result.items.length === 0 &&
-        requestedPage > 1 &&
-        result.totalPages < requestedPage
-      ) {
-        setPage(Math.max(1, result.totalPages));
-        return;
+      setTransactions(response.items);
+      setTotal(response.total);
+      setTotalPages(response.totalPages);
+      if (editingId === transaction.id) {
+        setEditingId(null);
+        setCurrencyOverride(null);
+        setForm(newForm(accounts[0]?.id || ''));
       }
-      setTransactions(result.items);
-      setTotal(result.total);
-      setTotalPages(result.totalPages);
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
-        router.replace("/login");
+        router.replace('/login');
         return;
       }
-      setError(
-        caught instanceof ApiError
-          ? caught.message
-          : "Unable to reload transactions.",
-      );
+      setError(caught instanceof ApiError ? caught.message : tVal('deleteError'));
     }
   }
 
@@ -261,66 +265,29 @@ export default function TransactionsClient() {
       type: transaction.type,
       amount: minorUnitsToInput(transaction.amountMinor, transaction.currency),
       category: transaction.category,
-      description: transaction.description,
+      description: transaction.description ?? '',
       date: transaction.date.slice(0, 10),
     });
     setCurrencyOverride(transaction.currency);
-    setError("");
-    setNotice("");
-  }
-
-  async function remove(transaction: Transaction) {
-    if (
-      !window.confirm(
-        `Delete the ${transaction.type} transaction "${transaction.category}"?`,
-      )
-    )
-      return;
-    setError("");
-    setNotice("");
-    try {
-      await transactionsApi.remove(transaction.id);
-      if (editingId === transaction.id) {
-        setEditingId(null);
-        setForm(newForm(accounts[0]?.id || ""));
-        setCurrencyOverride(null);
-      }
-      setNotice("Transaction deleted.");
-      await reloadTransactions();
-      await loadAccounts();
-    } catch (caught) {
-      if (caught instanceof ApiError && caught.status === 401) {
-        router.replace("/login");
-        return;
-      }
-      setError(
-        caught instanceof ApiError
-          ? caught.message
-          : "Unable to delete this transaction.",
-      );
-    }
-  }
-
-  function changeFilter(setter: (value: string) => void, value: string) {
-    setter(value);
-    setPage(1);
+    setError('');
+    setNotice('');
   }
 
   return (
-    <section className="mt-8 space-y-8">
+    <section className="space-y-8">
       <form
         className="grid gap-4 rounded-xl border border-gray-200 bg-white p-5 sm:grid-cols-2 lg:grid-cols-3"
-        onSubmit={(event) => void save(event)}
+        onSubmit={save}
       >
         <div className="sm:col-span-2 lg:col-span-3">
           <h2 className="text-lg font-semibold text-gray-900">
-            {editingId ? "Edit transaction" : "Add a transaction"}
+            {editingId ? t('editTransaction') : t('addTransaction')}
           </h2>
-          {accountsLoaded && accounts.length === 0 && (
+          {accountsLoaded && !accounts.length && (
             <p className="mt-1 text-sm text-amber-800">
-              You need an account before recording a transaction. Add one on the{" "}
+              {t('needAccount')}
               <a className="underline" href="/accounts">
-                Accounts page
+                {t('accountsPageLink')}
               </a>
               .
             </p>
@@ -331,7 +298,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-account"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Transaction account
+            {t('accountLabel')}
           </label>
           <select
             id="transaction-account"
@@ -343,9 +310,9 @@ export default function TransactionsClient() {
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900"
             disabled={!accounts.length}
           >
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name} ({account.currency})
+            {accounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.name} ({acc.currency})
               </option>
             ))}
           </select>
@@ -355,7 +322,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-type"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Transaction type
+            {t('typeLabel')}
           </label>
           <select
             id="transaction-type"
@@ -365,8 +332,8 @@ export default function TransactionsClient() {
             }
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900"
           >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
+            <option value="expense">{t('types.expense')}</option>
+            <option value="income">{t('types.income')}</option>
           </select>
         </div>
         <div>
@@ -374,7 +341,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-amount"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Amount {formCurrency ? `(${formCurrency})` : ""}
+            {t('amountLabel')} {formCurrency ? `(${formCurrency})` : ''}
           </label>
           <input
             id="transaction-amount"
@@ -386,7 +353,7 @@ export default function TransactionsClient() {
             }
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"
             placeholder={
-              fractionDigits ? `0.${"0".repeat(fractionDigits)}` : "0"
+              fractionDigits ? `0.${'0'.repeat(fractionDigits)}` : '0'
             }
           />
         </div>
@@ -395,7 +362,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-category"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Transaction category
+            {t('categoryLabel')}
           </label>
           <input
             id="transaction-category"
@@ -413,7 +380,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-date"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Transaction date
+            {t('dateLabel')}
           </label>
           <input
             id="transaction-date"
@@ -429,7 +396,7 @@ export default function TransactionsClient() {
             htmlFor="transaction-description"
             className="mb-1 block text-sm font-medium text-gray-700"
           >
-            Description (optional)
+            {t('descriptionLabel')}
           </label>
           <input
             id="transaction-description"
@@ -448,10 +415,10 @@ export default function TransactionsClient() {
             className="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60"
           >
             {saving
-              ? "Saving…"
+              ? tCommon('saving')
               : editingId
-                ? "Save changes"
-                : "Add transaction"}
+                ? t('saveChangesBtn')
+                : t('addTransactionBtn')}
           </button>
           {editingId && (
             <button
@@ -459,12 +426,12 @@ export default function TransactionsClient() {
               disabled={saving}
               onClick={() => {
                 setEditingId(null);
-                setForm(newForm(accounts[0]?.id || ""));
+                setForm(newForm(accounts[0]?.id || ''));
                 setCurrencyOverride(null);
               }}
               className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700"
             >
-              Cancel
+              {tCommon('cancel')}
             </button>
           )}
         </div>
@@ -488,13 +455,13 @@ export default function TransactionsClient() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              Your transactions
+              {t('yourTransactions')}
             </h2>
-            <p className="text-sm text-gray-600">{total} total</p>
+            <p className="text-sm text-gray-600">{t('totalCount', { count: total })}</p>
           </div>
           <div className="flex items-center gap-2">
             <label htmlFor="sort-by" className="text-sm text-gray-700">
-              Sort
+              {t('sortBy')}
             </label>
             <select
               id="sort-by"
@@ -505,21 +472,21 @@ export default function TransactionsClient() {
               }}
               className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm"
             >
-              <option value="date">Date</option>
-              <option value="createdAt">Created</option>
-              <option value="amountMinor">Amount</option>
+              <option value="date">{t('sortFields.date')}</option>
+              <option value="createdAt">{t('sortFields.createdAt')}</option>
+              <option value="amountMinor">{t('sortFields.amountMinor')}</option>
             </select>
             <select
               aria-label="Sort order"
               value={sortOrder}
               onChange={(event) => {
-                setSortOrder(event.target.value as "asc" | "desc");
+                setSortOrder(event.target.value as 'asc' | 'desc');
                 setPage(1);
               }}
               className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm"
             >
-              <option value="desc">Newest / highest</option>
-              <option value="asc">Oldest / lowest</option>
+              <option value="desc">{t('sortOrder.desc')}</option>
+              <option value="asc">{t('sortOrder.asc')}</option>
             </select>
           </div>
         </div>
@@ -530,7 +497,7 @@ export default function TransactionsClient() {
               htmlFor="filter-account"
               className="mb-1 block text-xs font-medium text-gray-600"
             >
-              Filter account
+              {t('filterAccount')}
             </label>
             <select
               id="filter-account"
@@ -540,10 +507,10 @@ export default function TransactionsClient() {
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
             >
-              <option value="">All accounts</option>
-              {accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
+              <option value="">{t('allAccounts')}</option>
+              {accounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name}
                 </option>
               ))}
             </select>
@@ -553,7 +520,7 @@ export default function TransactionsClient() {
               htmlFor="filter-type"
               className="mb-1 block text-xs font-medium text-gray-600"
             >
-              Filter type
+              {t('filterType')}
             </label>
             <select
               id="filter-type"
@@ -563,9 +530,9 @@ export default function TransactionsClient() {
               }
               className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm"
             >
-              <option value="">All types</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
+              <option value="">{t('allTypes')}</option>
+              <option value="income">{t('types.income')}</option>
+              <option value="expense">{t('types.expense')}</option>
             </select>
           </div>
           <div>
@@ -573,7 +540,7 @@ export default function TransactionsClient() {
               htmlFor="filter-category"
               className="mb-1 block text-xs font-medium text-gray-600"
             >
-              Filter category
+              {t('filterCategory')}
             </label>
             <input
               id="filter-category"
@@ -582,7 +549,7 @@ export default function TransactionsClient() {
                 changeFilter(setCategoryFilter, event.target.value)
               }
               className="w-full rounded-lg border border-gray-300 px-2 py-2 text-sm"
-              placeholder="Exact category"
+              placeholder={t('exactCategory')}
             />
           </div>
           <div>
@@ -590,7 +557,7 @@ export default function TransactionsClient() {
               htmlFor="filter-start"
               className="mb-1 block text-xs font-medium text-gray-600"
             >
-              Filter from
+              {t('filterFrom')}
             </label>
             <input
               id="filter-start"
@@ -607,7 +574,7 @@ export default function TransactionsClient() {
               htmlFor="filter-end"
               className="mb-1 block text-xs font-medium text-gray-600"
             >
-              Filter to
+              {t('filterTo')}
             </label>
             <input
               id="filter-end"
@@ -624,24 +591,23 @@ export default function TransactionsClient() {
             className="rounded-xl border border-gray-200 bg-white p-8 text-gray-600"
             role="status"
           >
-            Loading transactions…
+            {t('loadingTransactions')}
           </p>
         ) : transactions.length === 0 ? (
           <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-gray-600">
-            No transactions match these filters. Add a transaction or adjust the
-            filters.
+            {t('noMatching')}
           </p>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
             <table className="w-full min-w-[720px] divide-y divide-gray-200 text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
                 <tr>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Account</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3 text-right">Amount</th>
-                  <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3">{t('table.date')}</th>
+                  <th className="px-4 py-3">{t('table.category')}</th>
+                  <th className="px-4 py-3">{t('table.account')}</th>
+                  <th className="px-4 py-3">{t('table.type')}</th>
+                  <th className="px-4 py-3 text-right">{t('table.amount')}</th>
+                  <th className="px-4 py-3">{t('table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -662,18 +628,19 @@ export default function TransactionsClient() {
                     </td>
                     <td className="px-4 py-3 text-gray-700">
                       {accounts.find(
-                        (account) => account.id === transaction.accountId,
-                      )?.name ?? "Account"}
+                        (acc) => acc.id === transaction.accountId,
+                      )?.name ?? t('table.account')}
                     </td>
                     <td className="px-4 py-3 capitalize text-gray-700">
-                      {transaction.type}
+                      {t(`types.${transaction.type}`)}
                     </td>
                     <td
-                      className={`whitespace-nowrap px-4 py-3 text-right font-medium ${transaction.type === "income" ? "text-green-700" : "text-gray-900"}`}
+                      className={`whitespace-nowrap px-4 py-3 text-right font-medium ${transaction.type === 'income' ? 'text-green-700' : 'text-gray-900'}`}
                     >
                       {formatMinorUnits(
                         transaction.amountMinor,
                         transaction.currency,
+                        locale,
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3">
@@ -681,13 +648,13 @@ export default function TransactionsClient() {
                         className="mr-3 font-medium text-emerald-800 hover:underline"
                         onClick={() => edit(transaction)}
                       >
-                        Edit
+                        {tCommon('edit')}
                       </button>
                       <button
                         className="font-medium text-red-700 hover:underline"
                         onClick={() => void remove(transaction)}
                       >
-                        Delete
+                        {tCommon('delete')}
                       </button>
                     </td>
                   </tr>
@@ -703,17 +670,17 @@ export default function TransactionsClient() {
             onClick={() => setPage((current) => current - 1)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-50"
           >
-            Previous
+            {t('previous')}
           </button>
           <p className="text-sm text-gray-600">
-            Page {totalPages === 0 ? 0 : page} of {totalPages}
+            {t('pageOf', { page: totalPages === 0 ? 0 : page, total: totalPages })}
           </p>
           <button
             disabled={page >= totalPages || loading || totalPages === 0}
             onClick={() => setPage((current) => current + 1)}
             className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:opacity-50"
           >
-            Next
+            {t('next')}
           </button>
         </div>
       </section>

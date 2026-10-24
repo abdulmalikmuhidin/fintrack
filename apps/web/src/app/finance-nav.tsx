@@ -2,16 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import LogoutButton from './dashboard/logout-button';
-
-const links = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/accounts', label: 'Accounts' },
-  { href: '/transactions', label: 'Transactions' },
-];
+import LanguageSwitcher from '../components/language-switcher';
 
 export default function FinanceNav({ userLabel }: { userLabel: string }) {
   const pathname = usePathname();
+  const t = useTranslations('nav');
+
+  const links = [
+    { href: '/dashboard', label: t('dashboard') },
+    { href: '/accounts', label: t('accounts') },
+    { href: '/transactions', label: t('transactions') },
+  ];
 
   return (
     <header className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -20,6 +23,7 @@ export default function FinanceNav({ userLabel }: { userLabel: string }) {
           Fin<span className="text-emerald-700">Track</span>
         </Link>
         <div className="flex max-w-full flex-wrap items-center justify-end gap-3">
+          <LanguageSwitcher />
           <p className="max-w-48 truncate text-sm text-slate-600" title={userLabel}>
             {userLabel}
           </p>
@@ -27,7 +31,7 @@ export default function FinanceNav({ userLabel }: { userLabel: string }) {
         </div>
       </div>
       <nav
-        aria-label="Main navigation"
+        aria-label={t('mainNav')}
         className="flex gap-1 overflow-x-auto border-t border-slate-100 px-3 py-2"
       >
         {links.map(({ href, label }) => {

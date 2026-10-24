@@ -1,23 +1,28 @@
-import Link from "next/link";
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import LanguageSwitcher from '../components/language-switcher';
 
-export default function Home() {
+export default async function Home() {
+  const t = await getTranslations('home');
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="max-w-2xl w-full text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-          FinTrack
+    <main className="relative flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="absolute right-4 top-4 sm:right-8 sm:top-8">
+        <LanguageSwitcher />
+      </div>
+      <div className="w-full max-w-2xl text-center">
+        <h1 className="mb-6 text-4xl font-bold text-gray-900 md:text-5xl">
+          {t('title')}
         </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          A clear, private place to organize accounts and track income and
-          expenses.
+        <p className="mb-8 text-xl text-gray-600">
+          {t('subtitle')}
         </p>
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-emerald-900 mb-2">
-            Your finances, organized
+        <div className="mb-8 rounded-lg border border-emerald-200 bg-emerald-50 p-6">
+          <h2 className="mb-2 text-lg font-semibold text-emerald-900">
+            {t('cardTitle')}
           </h2>
           <p className="text-emerald-900">
-            Create accounts, record transactions, and review your financial
-            activity with currency-aware summaries.
+            {t('cardDescription')}
           </p>
         </div>
         <div className="mb-8 flex justify-center gap-3">
@@ -25,39 +30,43 @@ export default function Home() {
             href="/register"
             className="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white hover:bg-emerald-800"
           >
-            Create account
+            {t('createAccount')}
           </Link>
           <Link
             href="/login"
             className="rounded-lg border border-gray-300 bg-white px-5 py-2.5 font-semibold text-gray-700 hover:bg-gray-50"
           >
-            Log in
+            {t('login')}
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">📊 Dashboard</h3>
-            <p className="text-gray-600">
-              Visualize your spending patterns and financial health
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">
-              💰 Transactions
+        <div className="grid grid-cols-1 gap-4 text-left md:grid-cols-3">
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <h3 className="mb-2 font-semibold text-gray-900">
+              {t('featureDashboardTitle')}
             </h3>
             <p className="text-gray-600">
-              Track income and expenses with categories and tags
+              {t('featureDashboardDesc')}
             </p>
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="font-semibold text-gray-900 mb-2">📈 Accounts</h3>
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <h3 className="mb-2 font-semibold text-gray-900">
+              {t('featureTransactionsTitle')}
+            </h3>
             <p className="text-gray-600">
-              Manage your financial accounts and view their balances
+              {t('featureTransactionsDesc')}
+            </p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <h3 className="mb-2 font-semibold text-gray-900">
+              {t('featureAccountsTitle')}
+            </h3>
+            <p className="text-gray-600">
+              {t('featureAccountsDesc')}
             </p>
           </div>
         </div>
         <footer className="mt-12 text-sm text-gray-500">
-          <p>FinTrack v1.0.0 - Built with Next.js, NestJS, and MongoDB</p>
+          <p>{t('footer')}</p>
         </footer>
       </div>
     </main>
